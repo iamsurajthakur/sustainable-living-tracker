@@ -91,7 +91,8 @@ export default function Hero() {
 
       {/* SUBTEXT */}
       <p className="text-slate-300 md:text-base max-md:px-2 text-center max-w-2xl mt-3">
-        Unlock your potential with personalized strategies. Overcome challenges, boost results, and stay ahead in today’s competitive landscape.
+        Unlock your potential with personalized strategies. Overcome challenges,
+        boost results, and stay ahead in today’s competitive landscape.
       </p>
 
       {/*            ------------ CTA Buttons -------------------                  */}
