@@ -1,0 +1,22 @@
+<!-- save as sustainify-white.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="120" viewBox="0 0 600 120" role="img" aria-label="Sustainify logo">
+  <defs>
+    <style>
+      /* tries to use Poppins; if not available, falls back to system sans */
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&amp;display=swap');
+
+      .word {
+        font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-weight: 700;
+        font-size: 56px;
+        letter-spacing: 0.6px;
+        fill: #ffffff;
+      }
+    </style>
+  </defs>
+
+  <!-- centered text -->
+  <text x="50%" y="50%" class="word" dominant-baseline="middle" text-anchor="middle">
+    Sustainify
+  </text>
+</svg>
