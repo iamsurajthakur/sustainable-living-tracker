@@ -134,7 +134,7 @@ export default function Hero() {
                 href="#"
                 onMouseEnter={handleMouseEnter}
               >
-                About
+                Contact
               </a>
               <a
                 className="px-4 py-2 rounded-full relative z-10"

@@ -1,4 +1,5 @@
 import Banner from '@/components/home/Banner'
+import Faq from '@/components/home/Faq'
 import Features from '@/components/home/Features'
 import Hero from '@/components/home/Hero'
 import Testimonials from '@/components/home/Testimonials'
@@ -12,6 +13,7 @@ const Home = () => {
       <Hero />
       <Features />
       <Testimonials />
+      <Faq />
     </div>
   )
 }
