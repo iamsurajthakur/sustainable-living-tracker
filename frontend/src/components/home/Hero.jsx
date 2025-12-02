@@ -168,8 +168,8 @@ export default function Hero() {
           </button>
 
           {/* Contact Button */}
-          <button className="hidden md:block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition">
-            Contact Us
+          <button className="hidden md:block cursor-pointer bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition">
+            Login
           </button>
         </nav>
 
@@ -212,7 +212,7 @@ export default function Hero() {
           >
             Get Started
           </a>
-          <button className="flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-6 py-2.5 hover:bg-white/15 transition-all duration-300 hover:scale-105 group">
+          <button className="flex items-center cursor-pointer gap-2 bg-white/10 border border-white/15 rounded-full px-6 py-2.5 hover:bg-white/15 transition-all duration-300 hover:scale-105 group">
             <span>Learn More</span>
             <svg
               className="mt-0.5 transition-transform duration-300 group-hover:translate-x-1"
@@ -233,7 +233,7 @@ export default function Hero() {
         </div>
 
         {/* Logo Section */}
-        <div className="flex flex-wrap items-center justify-center gap-14 mt-14 max-md:px-2 opacity-40 animate-[fadeIn_1s_ease-out_0.6s_both]">
+        <div className="flex flex-wrap items-center justify-center gap-14 mt-20 max-md:px-2 opacity-40 animate-[fadeIn_1s_ease-out_0.6s_both]">
           <div className="text-2xl font-bold tracking-wider hover:opacity-100 transition-opacity duration-300">
             <svg
               width="117"

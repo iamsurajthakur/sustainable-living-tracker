@@ -118,7 +118,7 @@ const Features = () => {
       <div
         ref={sectionRef}
         id="features"
-        className="flex flex-col items-center pb-10 scroll-mt-12 bg-black px-4"
+        className="flex flex-col items-center mt-5 pb-10 scroll-mt-12 bg-black px-4"
       >
         <div className="text-center">
           <p className="text-center font-medium text-green-400 px-10 py-1.5 rounded-full bg-green-950/30 border border-green-900 w-max mx-auto">
