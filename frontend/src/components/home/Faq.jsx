@@ -40,7 +40,7 @@ const Faq = () => {
                     font-family: 'Poppins', sans-serif;
                 }
             `}</style>
-      <div className="bg-black py-16 px-4">
+      <div id="faq" className="bg-black py-16 px-4">
         <div className="max-w-6xl mx-auto mb-12 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Frequently Asked Questions

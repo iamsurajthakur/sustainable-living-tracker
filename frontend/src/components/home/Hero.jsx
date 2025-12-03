@@ -2,46 +2,114 @@ import React, { useState, useRef, useEffect } from 'react'
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('home')
+  const [isScrolled, setIsScrolled] = useState(false)
   const [indicatorStyle, setIndicatorStyle] = useState({
     left: 0,
     width: 0,
     opacity: 0,
   })
+
   const navRef = useRef(null)
   const homeRef = useRef(null)
+  const featuresRef = useRef(null)
+  const testimonialsRef = useRef(null)
+  const contactRef = useRef(null)
+  const faqRef = useRef(null)
 
+  const linkRefs = {
+    home: homeRef,
+    features: featuresRef,
+    testimonials: testimonialsRef,
+    contact: contactRef,
+    faq: faqRef,
+  }
+
+  // Handle scroll for fixed navbar and active section
   useEffect(() => {
-    // Set initial position to Home link
-    if (homeRef.current) {
-      const rect = homeRef.current.getBoundingClientRect()
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+
+      // Determine active section
+      const sections = ['home', 'features', 'testimonials', 'contact', 'faq']
+      const scrollPosition = window.scrollY + 100
+
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId)
+        if (element) {
+          const { offsetTop, offsetHeight } = element
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + offsetHeight
+          ) {
+            setActiveSection(sectionId)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Update indicator position based on active section
+  useEffect(() => {
+    const activeRef = linkRefs[activeSection]
+    if (activeRef?.current && navRef.current) {
       const navRect = navRef.current.getBoundingClientRect()
+      const linkRect = activeRef.current.getBoundingClientRect()
+
       setIndicatorStyle({
-        left: rect.left - navRect.left,
-        width: rect.width,
+        left: linkRect.left - navRect.left,
+        width: linkRect.width,
         opacity: 1,
       })
     }
-  }, [])
+  }, [activeSection])
 
   const handleMouseEnter = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const navRect = navRef.current.getBoundingClientRect()
-    setIndicatorStyle({
-      left: rect.left - navRect.left,
-      width: rect.width,
-      opacity: 1,
-    })
+    if (window.innerWidth >= 768 && navRef.current) {
+      const navRect = navRef.current.getBoundingClientRect()
+      const linkRect = e.currentTarget.getBoundingClientRect()
+
+      setIndicatorStyle({
+        left: linkRect.left - navRect.left,
+        width: linkRect.width,
+        opacity: 1,
+      })
+    }
   }
 
   const handleMouseLeave = () => {
-    // Return to Home position
-    if (homeRef.current) {
-      const rect = homeRef.current.getBoundingClientRect()
-      const navRect = navRef.current.getBoundingClientRect()
-      setIndicatorStyle({
-        left: rect.left - navRect.left,
-        width: rect.width,
-        opacity: 1,
+    if (window.innerWidth >= 768) {
+      const activeRef = linkRefs[activeSection]
+      if (activeRef?.current && navRef.current) {
+        const navRect = navRef.current.getBoundingClientRect()
+        const linkRect = activeRef.current.getBoundingClientRect()
+
+        setIndicatorStyle({
+          left: linkRect.left - navRect.left,
+          width: linkRect.width,
+          opacity: 1,
+        })
+      }
+    }
+  }
+
+  const handleLinkClick = (e, sectionId) => {
+    e.preventDefault()
+    setActiveSection(sectionId)
+    setOpen(false)
+
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const navHeight = 80
+      const elementPosition = element.offsetTop - navHeight
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth',
       })
     }
   }
@@ -75,31 +143,39 @@ export default function Hero() {
           }
           to {
             opacity: 1;
+            transform: translateY(0);
           }
         }
       `}</style>
-      <section className="relative flex flex-col items-center max-md:px-2 bg-black text-white text-sm pb-28 pt-8 bg-[url('https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/green-gradient-bg.svg')] bg-top bg-no-repeat">
-        {/* NAVBAR */}
-        <nav className="flex items-center border mx-4 w-full max-w-4xl justify-between border-slate-700 px-4 py-2.5 rounded-full text-white animate-[fadeInDown_0.6s_ease-out]">
-          <a href="#">
-            <img src="/logo.png" alt="logo" className="h-11 w-auto" />
-          </a>
-
-          {/* MOBILE NAV MENU */}
+      <section
+        id="home"
+        className="relative flex flex-col items-center max-md:px-2 bg-black text-white text-sm pb-28 pt-8 bg-[url('https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/green-gradient-bg.svg')] bg-top bg-no-repeat"
+      >
+        {/* FIXED NAVBAR */}
+        <nav
+          className={`fixed left-0 right-0 z-50 flex items-center justify-center transition-all duration-300 ${
+            isScrolled ? 'top-0 py-3' : 'top-8 py-4'
+          }`}
+        >
           <div
-            className={`max-md:absolute max-md:bg-black/50 max-md:backdrop-blur max-md:top-0 transition-all duration-300 max-md:h-full max-md:w-full max-md:z-10 flex-col md:flex-row flex items-center gap-2 ${
-              open ? 'max-md:left-0' : 'max-md:-left-full'
+            className={`flex items-center border mx-4 w-full max-w-4xl justify-between border-slate-700 px-4 py-2.5 rounded-full text-white transition-all duration-300 ${
+              isScrolled
+                ? 'bg-black/80 backdrop-blur-md shadow-lg'
+                : 'bg-transparent'
             }`}
           >
-            {/* Desktop Nav Container with Indicator */}
+            <a href="#home" onClick={(e) => handleLinkClick(e, 'home')}>
+              <img src="/logo.png" alt="logo" className="h-11 w-auto" />
+            </a>
+
+            {/* DESKTOP NAV */}
             <div
               ref={navRef}
-              className="relative flex items-center gap-2 max-md:flex-col"
+              className="hidden md:flex items-center gap-2 relative"
               onMouseLeave={handleMouseLeave}
             >
-              {/* Animated Indicator */}
               <div
-                className="absolute hidden md:block h-full border border-white/10 bg-white/10 rounded-full transition-all duration-300 ease-out pointer-events-none"
+                className="absolute h-full border border-white/10 bg-white/10 rounded-full transition-all duration-300 ease-out pointer-events-none"
                 style={{
                   left: `${indicatorStyle.left}px`,
                   width: `${indicatorStyle.width}px`,
@@ -109,69 +185,149 @@ export default function Hero() {
 
               <a
                 ref={homeRef}
-                className="px-4 py-2 max-md:border max-md:border-white/10 max-md:bg-white/10 font-medium rounded-full relative z-10"
-                href="#"
+                className={`px-6 py-3 font-medium rounded-full transition-all ${
+                  activeSection === 'home' ? 'text-white' : 'text-white/70'
+                }`}
+                href="#home"
                 onMouseEnter={handleMouseEnter}
+                onClick={(e) => handleLinkClick(e, 'home')}
               >
                 Home
               </a>
+
               <a
-                className="px-4 py-2 rounded-full relative z-10"
-                href="#"
+                ref={featuresRef}
+                className={`px-6 py-3 font-medium rounded-full transition-all ${
+                  activeSection === 'features' ? 'text-white' : 'text-white/70'
+                }`}
+                href="#features"
                 onMouseEnter={handleMouseEnter}
+                onClick={(e) => handleLinkClick(e, 'features')}
               >
                 Features
               </a>
+
               <a
-                className="px-4 py-2 rounded-full relative z-10"
-                href="#"
+                ref={testimonialsRef}
+                className={`px-6 py-3 font-medium rounded-full transition-all ${
+                  activeSection === 'testimonials'
+                    ? 'text-white'
+                    : 'text-white/70'
+                }`}
+                href="#testimonials"
                 onMouseEnter={handleMouseEnter}
+                onClick={(e) => handleLinkClick(e, 'testimonials')}
               >
                 Testimonials
               </a>
+
               <a
-                className="px-4 py-2 rounded-full relative z-10"
-                href="#"
+                ref={contactRef}
+                className={`px-6 py-3 font-medium rounded-full transition-all ${
+                  activeSection === 'contact' ? 'text-white' : 'text-white/70'
+                }`}
+                href="#contact"
                 onMouseEnter={handleMouseEnter}
+                onClick={(e) => handleLinkClick(e, 'contact')}
               >
                 Contact
               </a>
+
               <a
-                className="px-4 py-2 rounded-full relative z-10"
-                href="#"
+                ref={faqRef}
+                className={`px-6 py-3 font-medium rounded-full transition-all ${
+                  activeSection === 'faq' ? 'text-white' : 'text-white/70'
+                }`}
+                href="#faq"
                 onMouseEnter={handleMouseEnter}
+                onClick={(e) => handleLinkClick(e, 'faq')}
               >
                 FAQ
               </a>
             </div>
 
-            {/* Close Button (Mobile) */}
-            <button
-              className="md:hidden bg-gray-800 hover:bg-black text-white p-2 rounded-md aspect-square font-medium transition"
-              onClick={() => setOpen(false)}
-            >
-              ✕
+            {/* MOBILE BUTTONS */}
+            <button className="md:hidden" onClick={() => setOpen(true)}>
+              <svg
+                className="size-7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            <button className="hidden md:block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition">
+              Login
             </button>
           </div>
-
-          {/* Mobile Hamburger */}
-          <button className="md:hidden" onClick={() => setOpen(true)}>
-            <svg
-              className="size-7"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          {/* Contact Button */}
-          <button className="hidden md:block cursor-pointer bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition">
-            Login
-          </button>
         </nav>
+
+        {/* MOBILE MENU OVERLAY — OUTSIDE NAVBAR (FIX!) */}
+        {open && (
+          <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[60] flex flex-col items-center justify-center gap-6 transition-all duration-300">
+            <button
+              className="absolute top-8 right-8 text-white p-2 hover:bg-white/10 rounded-full"
+              onClick={() => setOpen(false)}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <a
+              className="text-2xl text-white"
+              href="#home"
+              onClick={(e) => handleLinkClick(e, 'home')}
+            >
+              Home
+            </a>
+
+            <a
+              className="text-2xl text-white"
+              href="#features"
+              onClick={(e) => handleLinkClick(e, 'features')}
+            >
+              Features
+            </a>
+
+            <a
+              className="text-2xl text-white"
+              href="#testimonials"
+              onClick={(e) => handleLinkClick(e, 'testimonials')}
+            >
+              Testimonials
+            </a>
+
+            <a
+              className="text-2xl text-white"
+              href="#contact"
+              onClick={(e) => handleLinkClick(e, 'contact')}
+            >
+              Contact
+            </a>
+
+            <a
+              className="text-2xl text-white"
+              href="#faq"
+              onClick={(e) => handleLinkClick(e, 'faq')}
+            >
+              FAQ
+            </a>
+
+            <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-xl">
+              Login
+            </button>
+          </div>
+        )}
 
         {/* COMMUNITY BUBBLE */}
         <div className="flex flex-wrap items-center justify-center p-1.5 mt-24 rounded-full border border-green-900 bg-green-700/15 text-xs animate-[fadeIn_0.8s_ease-out_0.2s_both]">
