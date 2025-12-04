@@ -259,9 +259,12 @@ export default function Hero() {
               </svg>
             </button>
 
-            <button className="hidden md:block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition">
+            <a
+              href="/app?state=login"
+              className="hidden md:block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition"
+            >
               Login
-            </button>
+            </a>
           </div>
         </nav>
 
