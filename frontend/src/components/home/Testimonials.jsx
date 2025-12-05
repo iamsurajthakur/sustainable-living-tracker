@@ -227,7 +227,7 @@ const Testimonials = () => {
             }
         `}</style>
 
-      <div className="marquee-row w-full mx-auto max-w-5xl overflow-hidden relative">
+      <div className="marquee-row mt-10 w-full mx-auto max-w-5xl overflow-hidden relative">
         <div className="absolute left-0 top-0 h-full w-20 z-10 pointer-events-none bg-gradient-to-r from-black to-transparent"></div>
         <div className="marquee-inner flex transform-gpu min-w-[200%] pt-10 pb-5">
           {[...cardsData, ...cardsData, ...cardsData].map((card, index) => (

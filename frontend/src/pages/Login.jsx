@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true)
+  const [searchParams] = useSearchParams()
+  const state = searchParams.get('state')
+
+  const [isLogin, setIsLogin] = useState(() => state !== 'register')
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',

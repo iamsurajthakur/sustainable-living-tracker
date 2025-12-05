@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
@@ -259,12 +260,12 @@ export default function Hero() {
               </svg>
             </button>
 
-            <a
-              href="/app?state=login"
+            <Link
+              to="/login"
               className="hidden md:block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition"
             >
               Login
-            </a>
+            </Link>
           </div>
         </nav>
 
@@ -352,7 +353,7 @@ export default function Hero() {
         </div>
 
         {/* TITLE */}
-        <h1 className="text-4xl md:text-6xl text-center pb-2 font-semibold max-w-4xl mt-6 bg-gradient-to-r from-white to-[#748298] text-transparent bg-clip-text animate-[fadeInUp_0.8s_ease-out_0.3s_both]">
+        <h1 className="text-4xl md:text-6xl text-center pb-2 font-semibold max-w-4xl mt-15 bg-gradient-to-r from-white to-[#748298] text-transparent bg-clip-text animate-[fadeInUp_0.8s_ease-out_0.3s_both]">
           Unlock a Greener Lifestyle with Smart Tracking
         </h1>
 
@@ -365,12 +366,12 @@ export default function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex items-center gap-2 mt-8 text-sm animate-[fadeInUp_0.8s_ease-out_0.5s_both]">
-          <a
-            href="/app?state=register"
+          <Link
+            to="/login?state=register"
             className="px-6 py-2.5 bg-green-600 hover:bg-green-700 transition-all duration-300 rounded-full hover:shadow hover:shadow-green-600/50"
           >
             Get Started
-          </a>
+          </Link>
           <button className="flex items-center cursor-pointer gap-2 bg-white/10 border border-white/15 rounded-full px-6 py-2.5 hover:bg-white/15 transition-all duration-300 hover:scale-105 group">
             <span>Learn More</span>
             <svg
@@ -392,7 +393,7 @@ export default function Hero() {
         </div>
 
         {/* Logo Section */}
-        <div className="flex flex-wrap items-center justify-center gap-14 mt-20 max-md:px-2 opacity-40 animate-[fadeIn_1s_ease-out_0.6s_both]">
+        <div className="flex flex-wrap items-center justify-center gap-14 mt-30 max-md:px-2 opacity-40 animate-[fadeIn_1s_ease-out_0.6s_both]">
           <div className="text-2xl font-bold tracking-wider hover:opacity-100 transition-opacity duration-300">
             <svg
               width="117"
