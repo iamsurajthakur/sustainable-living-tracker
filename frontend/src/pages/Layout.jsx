@@ -1,14 +1,50 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from '@/components/ui/sidebar'
+import DashboardSidebar from '@/components/dashboard/Sidebar'
+import { PanelLeft } from 'lucide-react'
 
 const Layout = () => {
   return (
-    <div>
-      <div>
-        <h1 className="text-white">Sidebar</h1>
-        <Outlet />
+    <SidebarProvider>
+      <div className="flex h-screen w-full bg-black">
+        <DashboardSidebar />
+        <SidebarInset className="bg-black">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-800 px-6 bg-[#0A0E27]">
+            {/* Left side - Toggle button */}
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-white hover:bg-gray-800 -ml-1">
+                <PanelLeft className="h-5 w-5" />
+              </SidebarTrigger>
+            </div>
+
+            {/* Right side - Logo and branding */}
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-lg overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="logo"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col leading-tight">
+                <span className="font-semibold text-white text-sm">
+                  Sustainify
+                </span>
+                <span className="text-xs text-gray-400">Admin</span>
+              </div>
+            </div>
+          </header>
+          <main className="flex flex-1 flex-col gap-4 p-6 overflow-auto bg-black">
+            <Outlet />
+          </main>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   )
 }
 
