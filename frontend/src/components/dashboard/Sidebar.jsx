@@ -18,6 +18,7 @@ import {
   Settings,
   ChevronUp,
   User2,
+  List,
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
@@ -49,9 +50,9 @@ const menuItems = [
     icon: History,
   },
   {
-    title: 'Settings',
+    title: 'Recent Activity',
     url: '/settings',
-    icon: Settings,
+    icon: List,
   },
 ]
 
@@ -65,7 +66,6 @@ export default function DashboardSidebar() {
       collapsible="icon"
       className="bg-[#0A0E27] border-r border-gray-800"
     >
-      {/* Content - No Header */}
       <SidebarContent className="bg-[#0A0E27]">
         <SidebarGroup className="px-3 py-4">
           {!isCollapsed && (

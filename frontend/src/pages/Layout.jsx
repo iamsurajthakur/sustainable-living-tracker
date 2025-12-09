@@ -20,6 +20,13 @@ const Layout = () => {
               <SidebarTrigger className="text-white hover:bg-gray-800 -ml-1">
                 <PanelLeft className="h-5 w-5" />
               </SidebarTrigger>
+
+              <div className="">
+                <div className="flex items-center gap-2 border border-[#161616] rounded-md px-3 py-1 text-1xl text-[#e0e1e6] bg-[#282a54]">
+                  <div className="size-2 rounded-full bg-green-500"></div>
+                  <span>Welcome back, John</span>
+                </div>
+              </div>
             </div>
 
             {/* Right side - Logo and branding */}
