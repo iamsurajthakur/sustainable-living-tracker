@@ -64,12 +64,12 @@ export default function DashboardSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="bg-[#0A0E27] border-r border-gray-800"
+      className="bg-[#050A07] border-r border-green-500/25"
     >
-      <SidebarContent className="bg-[#0A0E27]">
+      <SidebarContent className="bg-[#08120D]">
         <SidebarGroup className="px-3 py-4">
           {!isCollapsed && (
-            <SidebarGroupLabel className="text-gray-500 text-xs uppercase px-1 mb-2">
+            <SidebarGroupLabel className="text-green-400 text-xs uppercase px-1 mb-2">
               MAIN MENU
             </SidebarGroupLabel>
           )}
@@ -86,8 +86,8 @@ export default function DashboardSidebar() {
                         rounded-md transition-all h-10 px-3 w-full
                         ${
                           isActive
-                            ? 'bg-gray-800 text-white'
-                            : 'bg-transparent text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                            ? 'bg-green-500/25 text-green-50 ring-1 ring-green-400/40 shadow-[0_0_12px_rgba(34,197,94,0.25)]'
+                            : 'bg-transparent text-gray-400 hover:bg-green-400/10 hover:text-green-300'
                         }
                       `}
                     >
@@ -107,16 +107,18 @@ export default function DashboardSidebar() {
       </SidebarContent>
 
       {/* Footer */}
-      <div className="border-t border-gray-800 p-1.5">
+      <div className="border-t border-green-500/25 p-1.5">
         <SidebarMenu>
           <SidebarMenuItem className="list-none">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className={`bg-transparent hover:bg-gray-800/50 data-[state=open]:bg-gray-800/50 text-white h-14 w-full ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
+                  className={`bg-transparent hover:bg-green-400/10 data-[state=open]:bg-green-500/20 text-white h-14 w-full ${
+                    isCollapsed ? 'justify-center px-0' : 'px-4'
+                  }`}
                 >
-                  <div className="flex size-8 items-center justify-center rounded-lg bg-blue-600 text-white flex-shrink-0">
+                  <div className="flex size-8 items-center justify-center rounded-lg bg-green-500 text-black shadow-[0_0_10px_rgba(34,197,94,0.5)]">
                     <User2 className="size-5" />
                   </div>
                   {!isCollapsed && (
@@ -135,7 +137,7 @@ export default function DashboardSidebar() {
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-56 rounded-lg bg-[#0A0E27] border-gray-800"
+                className="w-56 rounded-lg bg-[#08120D] border border-green-500/25 shadow-[0_0_20px_rgba(0,0,0,0.6)]"
                 side="top"
                 align="end"
                 sideOffset={4}

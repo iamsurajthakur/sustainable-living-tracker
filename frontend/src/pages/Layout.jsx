@@ -14,7 +14,7 @@ const Layout = () => {
       <div className="flex h-screen w-full bg-black">
         <DashboardSidebar />
         <SidebarInset className="bg-black">
-          <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-800 px-6 bg-[#0A0E27]">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-800 px-6 bg-[#08120d]">
             {/* Left side - Toggle button */}
             <div className="flex items-center gap-4">
               <SidebarTrigger className="text-white hover:bg-gray-800 -ml-1">
@@ -22,7 +22,7 @@ const Layout = () => {
               </SidebarTrigger>
 
               <div className="">
-                <div className="flex items-center gap-2 border border-[#161616] rounded-md px-3 py-1 text-1xl text-[#e0e1e6] bg-[#282a54]">
+                <div className="flex items-center gap-2 border border-[#161616] rounded-md px-3 py-1 text-1xl text-[#e0e1e6] bg-[#292d2b]">
                   <div className="size-2 rounded-full bg-green-500"></div>
                   <span>Welcome back, John</span>
                 </div>
