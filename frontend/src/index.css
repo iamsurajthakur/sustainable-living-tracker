@@ -227,3 +227,33 @@ html{
     @apply bg-gray-900 text-white border-gray-700;
   }
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE, Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+.scrollbar-dark::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: #1f2325; /* dark track to match your bg */
+  border-radius: 8px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background-color: #4ade80; /* subtle green thumb for visibility */
+  border-radius: 8px;
+  border: 2px solid #1f2325; /* keep thumb inset */
+}
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background-color: #86efac; /* brighter green on hover */
+}
+
+.scrollbar-dark {
+  scrollbar-width: thin;
+  scrollbar-color: #4ade80 #1f2325;
+}

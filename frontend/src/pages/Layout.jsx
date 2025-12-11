@@ -46,7 +46,7 @@ const Layout = () => {
               </div>
             </div>
           </header>
-          <main className="flex flex-1 flex-col gap-4 p-6 overflow-auto bg-black">
+          <main className="flex flex-1 flex-col gap-4 p-6 scrollbar-dark overflow-auto bg-black">
             <Outlet />
           </main>
         </SidebarInset>
