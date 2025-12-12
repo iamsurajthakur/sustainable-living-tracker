@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { motion as Motion } from 'framer-motion'
 import {
   TrendingDown,
   TrendingUp,
@@ -9,6 +10,7 @@ import {
   Leaf,
 } from 'lucide-react'
 import TinySparkline from '@/components/charts/TinySparkline'
+import EnergyChart from '@/components/dashboard/ChartCard'
 
 import {
   LineChart,
@@ -21,18 +23,25 @@ import {
   Area,
 } from 'recharts'
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 25 },
+  show: { opacity: 1, y: 0 },
+}
+const specialCard = {
+  hidden: { opacity: 0, rotate: -3, y: 20 },
+  show: {
+    opacity: 1,
+    rotate: 0,
+    y: 0,
+    transition: { duration: 0.7, ease: 'easeOut' },
+  },
+}
+
 const Dashboard = () => {
   const [co2Data] = useState({
     thisWeek: 42.2,
     changePercent: -12,
   })
-
-  const [energyReduction] = useState([
-    { week: 'Week 1', value: 12 },
-    { week: 'Week 2', value: 18 },
-    { week: 'Week 3', value: 10 },
-    { week: 'Week 4', value: 22 },
-  ])
 
   return (
     <div className="bg-[#08120d] p-4">
@@ -40,8 +49,13 @@ const Dashboard = () => {
         {/* Top Row: Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* -----------CO2 Card--------------- */}
-
-          <div className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden">
+          <Motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden"
+          >
             {/* Subtle glow effect */}
             <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/5 rounded-full blur-3xl"></div>
 
@@ -75,11 +89,16 @@ const Dashboard = () => {
                 <span className="text-slate-500 text-sm">vs last week</span>
               </div>
             </div>
-          </div>
-
+          </Motion.div>
           {/* --------------Energy Usage Card---------------- */}
 
-          <div className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden">
+          <Motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.6, ease: 'easeIn' }}
+            className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden"
+          >
             <h3 className="text-green-400/70 text-sm font-medium uppercase tracking-wider mb-6 mt-3">
               energy usage
             </h3>
@@ -175,10 +194,15 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
-
+          </Motion.div>
           {/* Achievements Card */}
-          <div className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden">
+          <Motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="show"
+            transition={{ duration: 0.9, ease: 'easeIn' }}
+            className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden"
+          >
             <h3 className="text-green-400/70 text-sm font-medium uppercase tracking-wider mb-6 mt-3">
               sustainable action completed
             </h3>
@@ -223,91 +247,27 @@ const Dashboard = () => {
                 Suggested challenge: “No-plastic day” →
               </button>
             </div>
-          </div>
+          </Motion.div>
         </div>
 
         {/* Bottom Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Chart Card: Takes 2 columns */}
-          <div className="lg:col-span-2 bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] bg-[#292d2b] backdrop-blur-sm rounded-3xl p-6 border border-slate-800/50 shadow-xl">
-            <h3 className="text-green-400/70 text-sm font-medium uppercase tracking-wider ml-20 mb-6 mt-3">
-              Energy reduced this month
-            </h3>
-
-            <div className="relative h-72 px-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={energyReduction}
-                  margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    stroke="#043919"
-                    strokeOpacity={0.2}
-                    vertical={false}
-                  />
-
-                  {/* X Axis shows weeks */}
-                  <XAxis
-                    dataKey="week"
-                    tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  />
-
-                  {/* Y Axis */}
-                  <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
-
-                  {/* Tooltip */}
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0f172a',
-                      border: 'none',
-                      borderRadius: '6px',
-                      color: '#fff',
-                    }}
-                  />
-
-                  {/* Gradient area under curve */}
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#22c55e"
-                    fill="url(#colorEnergy)"
-                    fillOpacity={0.2}
-                  />
-
-                  <defs>
-                    <linearGradient
-                      id="colorEnergy"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Main line */}
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#22c55e"
-                    strokeWidth={3}
-                    dot={{ r: 4, stroke: '#0f172a', strokeWidth: 2 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <EnergyChart />
 
           {/* Tips Card */}
-          <div className="bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] bg-[#292d2b] backdrop-blur-sm rounded-3xl p-6 border border-slate-800/50 shadow-xl">
+          <Motion.div
+            variants={specialCard}
+            initial="hidden"
+            animate="show"
+            className="bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] bg-[#292d2b] backdrop-blur-sm rounded-3xl p-6 border border-slate-800/50 shadow-xl"
+          >
             <h3 className="text-green-400/70 text-sm font-medium uppercase tracking-wider mb-6 mt-3">
               Quick Insight & Tips
             </h3>
 
             {/* Scrollable container */}
-            <div className="max-h-64 overflow-y-auto space-y-4 pr-2 scrollbar-dark">
+            <div className="max-h-110 overflow-y-auto space-y-4 pr-2 scrollbar-dark">
               {/* Energy Tip */}
               <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
                 <div className="flex items-start gap-3">
@@ -353,8 +313,36 @@ const Dashboard = () => {
                   Log my ride →
                 </button>
               </div>
+
+              <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Leaf className="w-4 h-4 text-green-400" />
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Biking/cycling instead of driving reduces ~5kg CO₂ emissions
+                  </p>
+                </div>
+                <button className="text-xs text-green-400 hover:text-green-300 mt-1 self-start">
+                  Log my ride →
+                </button>
+              </div>
+
+              <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Leaf className="w-4 h-4 text-green-400" />
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Biking/cycling instead of driving reduces ~5kg CO₂ emissions
+                  </p>
+                </div>
+                <button className="text-xs text-green-400 hover:text-green-300 mt-1 self-start">
+                  Log my ride →
+                </button>
+              </div>
             </div>
-          </div>
+          </Motion.div>
         </div>
       </div>
     </div>

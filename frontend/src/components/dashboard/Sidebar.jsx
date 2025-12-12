@@ -107,14 +107,14 @@ export default function DashboardSidebar() {
       </SidebarContent>
 
       {/* Footer */}
-      <div className="border-t border-green-500/25 p-1.5">
+      <div className="border-t border-green-500/25 p-1.5 bg-[#08120D]">
         <SidebarMenu>
           <SidebarMenuItem className="list-none">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className={`bg-transparent hover:bg-green-400/10 data-[state=open]:bg-green-500/20 text-white h-14 w-full ${
+                  className={`hover:bg-green-400/10 data-[state=open]:bg-green-500/20 text-white h-14 w-full ${
                     isCollapsed ? 'justify-center px-0' : 'px-4'
                   }`}
                 >
