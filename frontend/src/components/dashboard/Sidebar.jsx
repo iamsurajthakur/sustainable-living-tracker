@@ -56,8 +56,16 @@ const menuItems = [
 ]
 
 export default function DashboardSidebar({ active, onSelect }) {
-  const { state } = useSidebar()
+  const { state, isMobile, setOpenMobile } = useSidebar()
   const isCollapsed = state === 'collapsed'
+
+  const handleMenuClick = (key) => {
+    onSelect(key)
+    // Close sidebar on mobile after selection
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
 
   return (
     <Sidebar
@@ -80,7 +88,7 @@ export default function DashboardSidebar({ active, onSelect }) {
                   <SidebarMenuItem key={item.title} className="list-none">
                     <SidebarMenuButton
                       tooltip={item.title}
-                      onClick={() => onSelect(item.key)}
+                      onClick={() => handleMenuClick(item.key)}
                       className={`
           rounded-md transition-all h-10 px-3 w-full
           ${
