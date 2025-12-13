@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { motion } from 'framer-motion'
+import { motion as Motion } from 'framer-motion'
 
 const EnergyChart = () => {
   const [timePeriod, setTimePeriod] = useState('1month')
@@ -71,7 +71,7 @@ const EnergyChart = () => {
   ]
 
   return (
-    <motion.div
+    <Motion.div
       variants={cardVariants}
       initial="hidden"
       animate="show"
@@ -206,7 +206,7 @@ const EnergyChart = () => {
           </p>
         </div>
       </div>
-    </motion.div>
+    </Motion.div>
   )
 }
 

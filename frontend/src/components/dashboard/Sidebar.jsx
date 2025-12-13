@@ -20,7 +20,6 @@ import {
   User2,
   List,
 } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,33 +30,32 @@ import {
 const menuItems = [
   {
     title: 'Dashboard',
-    url: '/dashboard',
+    key: 'overview',
     icon: LayoutDashboard,
   },
   {
     title: 'Log Activities',
-    url: '/log-activities',
+    key: 'log',
     icon: Activity,
   },
   {
     title: 'Eco-Challenges',
-    url: '/eco-challenges',
+    key: 'challenge',
     icon: Target,
   },
   {
     title: 'History',
-    url: '/history',
+    key: 'history',
     icon: History,
   },
   {
     title: 'Recent Activity',
-    url: '/settings',
+    key: 'recent',
     icon: List,
   },
 ]
 
-export default function DashboardSidebar() {
-  const location = useLocation()
+export default function DashboardSidebar({ active, onSelect }) {
   const { state } = useSidebar()
   const isCollapsed = state === 'collapsed'
 
@@ -76,27 +74,28 @@ export default function DashboardSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {menuItems.map((item) => {
-                const isActive = location.pathname === item.url
+                const isActive = active === item.key
+
                 return (
                   <SidebarMenuItem key={item.title} className="list-none">
                     <SidebarMenuButton
-                      asChild
                       tooltip={item.title}
+                      onClick={() => onSelect(item.key)}
                       className={`
-                        rounded-md transition-all h-10 px-3 w-full
-                        ${
-                          isActive
-                            ? 'bg-green-500/25 text-green-50 ring-1 ring-green-400/40 shadow-[0_0_12px_rgba(34,197,94,0.25)]'
-                            : 'bg-transparent text-gray-400 hover:bg-green-400/10 hover:text-green-300'
-                        }
-                      `}
+          rounded-md transition-all h-10 px-3 w-full
+          ${
+            isActive
+              ? 'bg-green-500/25 text-green-50 ring-1 ring-green-400/40'
+              : 'bg-transparent text-gray-400 hover:bg-green-400/10 hover:text-green-300'
+          }
+        `}
                     >
-                      <Link to={item.url} className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                         <item.icon className="size-4 flex-shrink-0" />
                         {!isCollapsed && (
                           <span className="text-sm truncate">{item.title}</span>
                         )}
-                      </Link>
+                      </div>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
