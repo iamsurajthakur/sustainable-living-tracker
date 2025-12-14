@@ -9,6 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Calendar as ShadcnCalendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { ChevronDownIcon } from 'lucide-react'
+import { format } from 'date-fns'
 
 const LogActivities = () => {
   const [activities, setActivities] = useState([''])
@@ -251,11 +261,11 @@ const LogActivities = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Quantity *
                 </label>
-                <input
+                <Input
                   type="number"
                   value={formData.quantity}
-                  onChange={(e) =>
-                    handleInputChange('quantity', e.target.value)
+                  onValueChange={(value) =>
+                    handleInputChange('quantity', value)
                   }
                   min="0"
                   step="0.1"
@@ -269,17 +279,25 @@ const LogActivities = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Unit *
                 </label>
-                <select
+                <Select
                   value={formData.unit}
-                  onChange={(e) => handleInputChange('unit', e.target.value)}
-                  className="w-full bg-[#0f1712] border border-[#2d3d34] rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  onValueChange={(value) => handleInputChange('unit', value)}
                 >
-                  {unitsByCategory[formData.category].map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full bg-[#0f1712] border border-[#2d3d34] rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <SelectValue placeholder="unit" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0a0f0d]">
+                    {unitsByCategory[formData.category].map((unit) => (
+                      <SelectItem
+                        key={unit}
+                        value={unit}
+                        className="cursor-pointer hover:bg-[#28322c]"
+                      >
+                        {unit}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Date */}
@@ -287,12 +305,83 @@ const LogActivities = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Date *
                 </label>
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="w-full bg-[#0f1712] border border-[#2d3d34] rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="
+          w-full justify-between bg-[#0f1712]
+          border border-[#2d3d34] text-gray-200
+          hover:bg-[#16241c]
+          focus:outline-none focus:ring-0
+          focus-visible:ring-0
+        "
+                    >
+                      {formData.date
+                        ? format(new Date(formData.date), 'PPP')
+                        : 'Select date'}
+                      <ChevronDownIcon className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent
+                    align="start"
+                    className="w-auto p-0 overflow-hidden bg-[#0f1712] border border-[#2d3d34]"
+                  >
+                    <ShadcnCalendar
+                      mode="single"
+                      selected={
+                        formData.date ? new Date(formData.date) : new Date()
+                      }
+                      captionLayout="dropdown"
+                      onSelect={(selectedDate) => {
+                        if (!selectedDate) return
+                        // Fix: Format date without timezone conversion
+                        const year = selectedDate.getFullYear()
+                        const month = String(
+                          selectedDate.getMonth() + 1
+                        ).padStart(2, '0')
+                        const day = String(selectedDate.getDate()).padStart(
+                          2,
+                          '0'
+                        )
+                        const formattedDate = `${year}-${month}-${day}`
+
+                        handleInputChange('date', formattedDate)
+                      }}
+                      classNames={{
+                        months: 'space-y-4',
+                        month: 'space-y-4',
+                        caption:
+                          'flex justify-center pt-1 relative items-center gap-2',
+                        caption_label: 'hidden',
+                        caption_dropdowns: 'flex gap-2',
+                        dropdown:
+                          'bg-[#0f1712] text-gray-200 border border-[#2d3d34] rounded px-3 py-1.5 text-sm appearance-none cursor-pointer',
+                        dropdown_month: 'bg-[#0f1712] text-gray-200',
+                        dropdown_year: 'bg-[#0f1712] text-gray-200',
+                        nav: 'space-x-1 flex items-center',
+                        nav_button:
+                          'h-7 w-7 bg-transparent p-0 text-gray-200 hover:bg-[#16241c] rounded',
+                        nav_button_previous: 'absolute left-1',
+                        nav_button_next: 'absolute right-1',
+                        table: 'w-full border-collapse space-y-1 mt-4',
+                        head_row: 'flex',
+                        head_cell:
+                          'text-gray-400 rounded-md w-9 font-normal text-[0.8rem]',
+                        row: 'flex w-full mt-2',
+                        cell: 'text-center text-sm p-0 relative',
+                        day: 'h-9 w-9 p-0 font-normal text-gray-200 hover:bg-[#16241c] rounded-md',
+                        day_selected:
+                          'bg-[#2d3d34] text-gray-200 hover:bg-[#2d3d34]',
+                        day_today: 'bg-[#16241c] text-gray-200',
+                      }}
+                      fromYear={1900}
+                      toYear={2100}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Note */}
@@ -300,10 +389,10 @@ const LogActivities = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Note (Optional)
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.note}
-                  onChange={(e) => handleInputChange('note', e.target.value)}
+                  onValueChange={(value) => handleInputChange('note', value)}
                   maxLength="100"
                   className="w-full bg-[#0f1712] border border-[#2d3d34] rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Add a note..."
