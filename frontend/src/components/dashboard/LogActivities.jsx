@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Plus, Edit2, Trash2, Calendar, Activity } from 'lucide-react'
+import { AnimatePresence, motion as Motion } from 'framer-motion'
 import {
   Select,
   SelectContent,
@@ -453,59 +454,72 @@ const LogActivities = () => {
                   <p>No activities logged yet today</p>
                 </div>
               ) : (
-                <div className="space-y-3 overflow-y-auto max-h-[300px] pr-2">
-                  {todaysActivities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="bg-[#0f1712] border border-[#2d3d34] rounded-lg p-4 flex items-center justify-between hover:border-emerald-700/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-4 flex-1">
-                        <span className="text-2xl">
-                          {categoryIcons[activity.category]}
-                        </span>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-emerald-400">
-                              {activity.category}
-                            </span>
-                            <span className="text-gray-600">|</span>
-                            <span className="text-white font-medium">
-                              {activity.action}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm text-gray-400">
-                            <span className="font-semibold text-gray-300">
-                              {activity.quantity} {activity.unit}
-                            </span>
-                            <span className="text-gray-600">•</span>
-                            <span>{activity.time}</span>
-                            {activity.note && (
-                              <>
-                                <span className="text-gray-600">•</span>
-                                <span className="italic">{activity.note}</span>
-                              </>
-                            )}
+                <div
+                  className="space-y-3 overflow-y-auto max-h-[300px] pr-2 
+             [mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]
+             [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
+                >
+                  <AnimatePresence>
+                    {todaysActivities.map((activity) => (
+                      <Motion.div
+                        key={activity.id}
+                        layout
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        className="bg-[#0f1712] border border-[#2d3d34] rounded-lg p-4 flex items-center justify-between hover:border-emerald-700/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4 flex-1">
+                          <span className="text-2xl">
+                            {categoryIcons[activity.category]}
+                          </span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium text-emerald-400">
+                                {activity.category}
+                              </span>
+                              <span className="text-gray-600">|</span>
+                              <span className="text-white font-medium">
+                                {activity.action}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-400">
+                              <span className="font-semibold text-gray-300">
+                                {activity.quantity} {activity.unit}
+                              </span>
+                              <span className="text-gray-600">•</span>
+                              <span>{activity.time}</span>
+                              {activity.note && (
+                                <>
+                                  <span className="text-gray-600">•</span>
+                                  <span className="italic">
+                                    {activity.note}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleEdit(activity)}
-                          className="p-2 text-gray-400 hover:text-emerald-400 hover:bg-[#1a2820] rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(activity.id)}
-                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-[#1a2820] rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEdit(activity)}
+                            className="p-2 text-gray-400 hover:text-emerald-400 hover:bg-[#1a2820] rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(activity.id)}
+                            className="p-2 text-gray-400 hover:text-red-400 hover:bg-[#1a2820] rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </Motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
               )}
             </div>

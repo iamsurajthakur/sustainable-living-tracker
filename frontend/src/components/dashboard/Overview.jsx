@@ -256,7 +256,10 @@ const Overview = () => {
             </h3>
 
             {/* Scrollable container */}
-            <div className="max-h-110 overflow-y-auto space-y-4 pr-2 scrollbar-dark">
+            <div
+              className="max-h-110 overflow-y-auto space-y-4 pr-2 scrollbar-dark [mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]
+             [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
+            >
               {/* Energy Tip */}
               <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
                 <div className="flex items-start gap-3">
