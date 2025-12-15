@@ -442,7 +442,7 @@ const LogActivities = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Today's Logged Activities */}
           <div className="lg:col-span-2">
-            <div className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6">
+            <div className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 max-h-100">
               <h2 className="text-xl font-semibold text-white mb-4">
                 Today's Activities ({todaysActivities.length})
               </h2>
@@ -453,7 +453,7 @@ const LogActivities = () => {
                   <p>No activities logged yet today</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 overflow-y-auto max-h-[300px] pr-2">
                   {todaysActivities.map((activity) => (
                     <div
                       key={activity.id}
@@ -513,7 +513,7 @@ const LogActivities = () => {
 
           {/* Daily Summary */}
           <div>
-            <div className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6">
+            <div className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 max-h-100">
               <h2 className="text-xl font-semibold text-white mb-4">
                 Daily Summary
               </h2>
