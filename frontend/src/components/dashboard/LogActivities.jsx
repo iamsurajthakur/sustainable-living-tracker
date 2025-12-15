@@ -19,9 +19,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
+import { useRef } from 'react'
 
 const LogActivities = () => {
   const [activities, setActivities] = useState([''])
+  const inputRef = useRef(null)
 
   const [formData, setFormData] = useState({
     category: 'Transport',
@@ -79,8 +81,8 @@ const LogActivities = () => {
     Transport: ['km', 'miles'],
     Energy: ['kWh', 'hours'],
     Water: ['liters', 'gallons'],
-    Waste: ['items', 'kg'],
-    Lifestyle: ['items', 'hours'],
+    Waste: ['grams', 'kg'],
+    Lifestyle: ['items', 'hours', 'meals', 'purchases'],
   }
 
   const handleInputChange = (field, value) => {
@@ -169,14 +171,20 @@ const LogActivities = () => {
               Track your daily sustainable actions
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => {
+              inputRef.current?.showPicker?.()
+              inputRef.current?.focus()
+            }}
+          >
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
+              <Input
+                ref={inputRef}
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-[#1a2820] border border-[#2d3d34] rounded-lg pl-10 pr-4 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="bg-[#1a2820] border border-[#2d3d34] rounded-lg pl-10 pr-3 py-2 cursor-pointer text-sm focus:outline-none focus:ring-0 focus-visible:ring-0"
               />
             </div>
           </div>
@@ -264,8 +272,8 @@ const LogActivities = () => {
                 <Input
                   type="number"
                   value={formData.quantity}
-                  onValueChange={(value) =>
-                    handleInputChange('quantity', value)
+                  onChange={(e) =>
+                    handleInputChange('quantity', e.target.value)
                   }
                   min="0"
                   step="0.1"
@@ -392,7 +400,7 @@ const LogActivities = () => {
                 <Input
                   type="text"
                   value={formData.note}
-                  onValueChange={(value) => handleInputChange('note', value)}
+                  onChange={(e) => handleInputChange('note', e.target.value)}
                   maxLength="100"
                   className="w-full bg-[#0f1712] border border-[#2d3d34] rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Add a note..."
