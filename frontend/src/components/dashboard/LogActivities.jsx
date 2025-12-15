@@ -199,7 +199,12 @@ const LogActivities = () => {
         )}
 
         {/* Quick Log Form */}
-        <div className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 mb-8">
+        <Motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 mb-8"
+        >
           <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
             <Activity className="w-5 h-5 text-emerald-500" />
             {editingId ? 'Edit Activity' : 'Quick Log Form'}
@@ -438,12 +443,17 @@ const LogActivities = () => {
               )}
             </div>
           </div>
-        </div>
+        </Motion.div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Today's Logged Activities */}
           <div className="lg:col-span-2">
-            <div className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 max-h-100">
+            <Motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 max-h-100"
+            >
               <h2 className="text-xl font-semibold text-white mb-4">
                 Today's Activities ({todaysActivities.length})
               </h2>
@@ -522,12 +532,17 @@ const LogActivities = () => {
                   </AnimatePresence>
                 </div>
               )}
-            </div>
+            </Motion.div>
           </div>
 
           {/* Daily Summary */}
           <div>
-            <div className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 max-h-100">
+            <Motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 max-h-100"
+            >
               <h2 className="text-xl font-semibold text-white mb-4">
                 Daily Summary
               </h2>
@@ -560,7 +575,7 @@ const LogActivities = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Motion.div>
           </div>
         </div>
       </div>
