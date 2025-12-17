@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   CheckCircle,
   Leaf,
@@ -8,6 +8,8 @@ import {
   UtensilsCrossed,
   Award,
   Flame,
+  Filter,
+  X,
 } from 'lucide-react'
 
 // Sample data
@@ -84,6 +86,33 @@ const challengesData = [
     impact: 'Save 2 kg food waste/week',
     dailyTask: 'Did you prep meals and avoid food waste today?',
   },
+  {
+    id: 9,
+    title: 'Compost organic waste',
+    duration: '30 Days',
+    difficulty: 'Medium',
+    category: 'Waste',
+    impact: 'Divert 5 kg waste from landfills',
+    dailyTask: 'Did you compost your organic waste today?',
+  },
+  {
+    id: 10,
+    title: 'Take shorter showers',
+    duration: '7 Days',
+    difficulty: 'Easy',
+    category: 'Energy',
+    impact: 'Save 50 liters of water',
+    dailyTask: 'Did you keep your shower under 5 minutes today?',
+  },
+  {
+    id: 11,
+    title: 'Buy local produce only',
+    duration: '7 Days',
+    difficulty: 'Medium',
+    category: 'Food',
+    impact: 'Reduce transportation emissions',
+    dailyTask: 'Did you buy only local produce today?',
+  },
 ]
 
 const categoryIcons = {
@@ -149,78 +178,138 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete }) => {
   )
 }
 
-// FilterBar Component
-const FilterBar = ({ filters, onFilterChange }) => {
+// FilterDropdown Component
+const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
+  const dropdownRef = useRef(null)
+  const activeFiltersCount = [
+    filters.difficulty,
+    filters.duration,
+    filters.category,
+  ].filter(Boolean).length
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        onToggle()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen, onToggle])
+
   return (
-    <div className="mb-4 space-y-2.5">
-      <div>
-        <p className="text-xs font-medium text-gray-400 mb-1.5">Difficulty</p>
-        <div className="flex gap-2">
-          {['Easy', 'Medium', 'Hard'].map((level) => (
-            <button
-              key={level}
-              onClick={() => onFilterChange('difficulty', level)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                filters.difficulty === level
-                  ? 'bg-[#10b981] text-white'
-                  : 'bg-[#1a2b23] text-gray-300 hover:bg-[#243530] border border-gray-700'
-              }`}
-            >
-              {level}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 px-3 py-1.5 bg-[#1a2b23] hover:bg-[#243530] border border-gray-700 rounded-lg text-sm font-medium text-gray-300 transition-colors"
+      >
+        <Filter className="w-4 h-4" />
+        Filters
+        {activeFiltersCount > 0 && (
+          <span className="bg-[#10b981] text-white text-xs px-1.5 py-0.5 rounded-full">
+            {activeFiltersCount}
+          </span>
+        )}
+      </button>
 
-      <div>
-        <p className="text-xs font-medium text-gray-400 mb-1.5">Duration</p>
-        <div className="flex gap-2">
-          {['1 Day', '7 Days', '30 Days'].map((duration) => (
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 bg-[#1a2b23] border border-gray-700 rounded-lg shadow-xl z-10 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-white">
+              Filter Challenges
+            </h3>
             <button
-              key={duration}
-              onClick={() => onFilterChange('duration', duration)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                filters.duration === duration
-                  ? 'bg-[#10b981] text-white'
-                  : 'bg-[#1a2b23] text-gray-300 hover:bg-[#243530] border border-gray-700'
-              }`}
+              onClick={onToggle}
+              className="text-gray-400 hover:text-white transition-colors"
             >
-              {duration}
+              <X className="w-4 h-4" />
             </button>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      <div>
-        <p className="text-xs font-medium text-gray-400 mb-1.5">Category</p>
-        <div className="flex gap-2 flex-wrap">
-          {['Energy', 'Waste', 'Transport', 'Food'].map((category) => {
-            const Icon = categoryIcons[category]
-            return (
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-medium text-gray-400 mb-1.5">
+                Difficulty
+              </p>
+              <div className="flex gap-2">
+                {['Easy', 'Medium', 'Hard'].map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => onFilterChange('difficulty', level)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      filters.difficulty === level
+                        ? 'bg-[#10b981] text-white'
+                        : 'bg-[#0f1a15] text-gray-300 hover:bg-[#162820] border border-gray-700'
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium text-gray-400 mb-1.5">
+                Duration
+              </p>
+              <div className="flex gap-2">
+                {['1 Day', '7 Days', '30 Days'].map((duration) => (
+                  <button
+                    key={duration}
+                    onClick={() => onFilterChange('duration', duration)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      filters.duration === duration
+                        ? 'bg-[#10b981] text-white'
+                        : 'bg-[#0f1a15] text-gray-300 hover:bg-[#162820] border border-gray-700'
+                    }`}
+                  >
+                    {duration}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium text-gray-400 mb-1.5">
+                Category
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {['Energy', 'Waste', 'Transport', 'Food'].map((category) => {
+                  const Icon = categoryIcons[category]
+                  return (
+                    <button
+                      key={category}
+                      onClick={() => onFilterChange('category', category)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 justify-center ${
+                        filters.category === category
+                          ? 'bg-[#10b981] text-white'
+                          : 'bg-[#0f1a15] text-gray-300 hover:bg-[#162820] border border-gray-700'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {category}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {activeFiltersCount > 0 && (
               <button
-                key={category}
-                onClick={() => onFilterChange('category', category)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                  filters.category === category
-                    ? 'bg-[#10b981] text-white'
-                    : 'bg-[#1a2b23] text-gray-300 hover:bg-[#243530] border border-gray-700'
-                }`}
+                onClick={() => {
+                  onFilterChange('clear', null)
+                  onToggle()
+                }}
+                className="w-full text-sm text-[#10b981] hover:text-[#0ea571] font-medium py-2 hover:bg-[#0f1a15] rounded-lg transition-colors"
               >
-                <Icon className="w-3.5 h-3.5" />
-                {category}
+                Clear all filters
               </button>
-            )
-          })}
+            )}
+          </div>
         </div>
-      </div>
-
-      {(filters.difficulty || filters.duration || filters.category) && (
-        <button
-          onClick={() => onFilterChange('clear', null)}
-          className="text-xs text-[#10b981] hover:text-[#0ea571] font-medium"
-        >
-          Clear filters
-        </button>
       )}
     </div>
   )
@@ -280,6 +369,7 @@ export default function EcoChallenge() {
     duration: null,
     category: null,
   })
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [stats, setStats] = useState({
     streak: 3,
     completed: 12,
@@ -435,16 +525,24 @@ export default function EcoChallenge() {
           </div>
         )}
 
-        {/* Filters */}
-        <FilterBar filters={filters} onFilterChange={handleFilterChange} />
-
         {/* Available Challenges */}
         <div className="mb-4">
-          <h2 className="text-base font-semibold text-white mb-3">
-            {activeChallenge ? 'More Challenges' : 'Available Challenges'}
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-white">
+              {activeChallenge ? 'More Challenges' : 'Available Challenges'}
+            </h2>
+            <FilterDropdown
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              isOpen={filterDropdownOpen}
+              onToggle={() => setFilterDropdownOpen(!filterDropdownOpen)}
+            />
+          </div>
           {filteredChallenges.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto p-4 bg-[#0f1814] rounded-lg [mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]
+             [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
+            >
               {filteredChallenges.map((challenge) => (
                 <ChallengeCard
                   key={challenge.id}
