@@ -10,7 +10,22 @@ import {
   Flame,
   Filter,
   X,
+  CheckCircle2Icon,
 } from 'lucide-react'
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 // Sample data
 const challengesData = [
@@ -350,19 +365,42 @@ const ChallengeCard = ({ challenge, onStart }) => {
         <span>🌱 {challenge.impact}</span>
       </div>
 
-      <button
-        onClick={() => onStart(challenge)}
-        className="w-full bg-[#10b981] hover:bg-[#0ea571] text-white font-semibold py-2 px-3 rounded-lg transition-colors text-sm"
-      >
-        Start Challenge
-      </button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <button className="w-full bg-[#10b981] hover:bg-[#0ea571] text-white cursor-pointer font-semibold py-2 px-3 rounded-lg transition-colors text-sm">
+            Start Challenge
+          </button>
+        </AlertDialogTrigger>
+
+        <AlertDialogContent className="bg-[#1a2b23]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start this challenge?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once started, the challenge cannot be paused or reset.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border border-green-600 text-green-700 cursor-pointer hover:bg-green-50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => onStart(challenge)}
+              className="bg-emerald-600 cursor-pointer text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500"
+            >
+              Start
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
 
 // Main App Component
 export default function EcoChallenge() {
-  const [activeChallenge, setActiveChallenge] = useState(challengesData[0])
+  const [activeChallenge, setActiveChallenge] = useState('')
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false)
   const [currentDay, setCurrentDay] = useState(3)
   const [filters, setFilters] = useState({
     difficulty: null,
@@ -371,9 +409,9 @@ export default function EcoChallenge() {
   })
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [stats, setStats] = useState({
-    streak: 3,
-    completed: 12,
-    ecoPoints: 340,
+    streak: 0,
+    completed: 0,
+    ecoPoints: 0,
   })
 
   const handleFilterChange = (filterType, value) => {
@@ -413,8 +451,11 @@ export default function EcoChallenge() {
 
   const handleStartChallenge = (challenge) => {
     setActiveChallenge(challenge)
-    setCurrentDay(1)
-    alert(`Challenge started: ${challenge.title}`)
+    setCurrentDay(0)
+    setShowSuccessAlert(true)
+
+    // optional auto-hide
+    setTimeout(() => setShowSuccessAlert(false), 3000)
   }
 
   const filteredChallenges = challengesData.filter((challenge) => {
@@ -430,6 +471,21 @@ export default function EcoChallenge() {
 
   return (
     <div className="min-h-screen bg-[#0a0f0d]">
+      {/*     ------------Success alert message block----------      */}
+      {showSuccessAlert && (
+        <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
+          <Alert className="border-emerald-500/50 bg-emerald-950/90 backdrop-blur-md shadow-lg">
+            <CheckCircle2Icon className="h-4 w-4 text-emerald-400" />
+            <AlertTitle className="text-emerald-400">
+              Challenge Started
+            </AlertTitle>
+            <AlertDescription className="text-gray-300">
+              Challenge "{activeChallenge?.title}" has started successfully.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto p-3 md:p-4">
         {/* Header & Stats Combined */}
         <div className="flex items-center justify-between mb-4">
