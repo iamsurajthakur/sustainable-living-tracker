@@ -25,7 +25,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  SuccessAlert,
+  TaskAlert,
+  ChallengeCompleteAlert,
+} from '@/components/dashboard/SuccessAlert'
+import { motion as Motion } from 'framer-motion'
 
 // Sample data
 const challengesData = [
@@ -138,93 +143,96 @@ const categoryIcons = {
 }
 
 // ActiveChallengeCard Component
-const ActiveChallengeCard = ({ challenge, currentDay, onComplete }) => {
+const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
   const totalDays = parseInt(challenge.duration)
   const progress = (currentDay / totalDays) * 100
   const Icon = categoryIcons[challenge.category] || (() => null)
+  const COOLDOWN = 24 * 10 * 10 * 1000
 
   const challengeKey = `lastCompletedAt_${challenge.id}`
   const [lastCompletedAt, setLastCompletedAt] = useState(() => {
     const stored = localStorage.getItem(challengeKey)
     return stored ? Number(stored) : null
   })
-
-  const isSameDay = (timestamp1, timestamp2) => {
-    const d1 = new Date(timestamp1)
-    const d2 = new Date(timestamp2)
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    )
-  }
-
-  const isBlocked =
-    lastCompletedAt !== null && isSameDay(lastCompletedAt, Date.now())
+  const [now, setNow] = useState(Date.now())
+  const isBlocked = lastCompletedAt !== null && now - lastCompletedAt < COOLDOWN
 
   useEffect(() => {
-    // Optional: re-check when component mounts or challenge changes
-    const stored = localStorage.getItem(challengeKey)
-    if (stored) setLastCompletedAt(Number(stored))
-  }, [challengeKey])
+    if (!isBlocked) return
+    const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
+  }, [isBlocked])
 
   return (
-    <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1.5">
-            <Icon className="w-4 h-4 text-[#10b981]" />
+    <Motion.div
+      initial={{ opacity: 0, y: 50 }} // start invisible and below
+      animate={{ opacity: 1, y: 0 }} // animate to natural position
+      transition={{
+        type: 'spring',
+        stiffness: 100,
+        duration: 0.5,
+        delay: index * 0.15, // stagger animation by index
+      }}
+    >
+      <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Icon className="w-4 h-4 text-[#10b981]" />
+              <span className="text-xs font-medium text-[#10b981]">
+                {challenge.category}
+              </span>
+            </div>
+            <h2 className="text-base font-bold text-white mb-1">
+              {challenge.title}
+            </h2>
+            <p className="text-xs text-gray-400">{challenge.impact}</p>
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-gray-300">
+              Day {currentDay} of {totalDays}
+            </span>
             <span className="text-xs font-medium text-[#10b981]">
-              {challenge.category}
+              {Math.round(progress)}%
             </span>
           </div>
-          <h2 className="text-base font-bold text-white mb-1">
-            {challenge.title}
-          </h2>
-          <p className="text-xs text-gray-400">{challenge.impact}</p>
+          <div className="w-full bg-[#0f1a15] rounded-full h-2">
+            <div
+              className="bg-[#10b981] h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
-      </div>
 
-      <div className="mb-3">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-medium text-gray-300">
-            Day {currentDay} of {totalDays}
-          </span>
-          <span className="text-xs font-medium text-[#10b981]">
-            {Math.round(progress)}%
-          </span>
+        <div className="bg-[#0f1a15] rounded-lg p-3 mb-3">
+          <p className="text-xs font-medium text-gray-300 mb-1.5">
+            Today's Task
+          </p>
+          <p className="text-sm text-gray-200">{challenge.dailyTask}</p>
         </div>
-        <div className="w-full bg-[#0f1a15] rounded-full h-2">
-          <div
-            className="bg-[#10b981] h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
 
-      <div className="bg-[#0f1a15] rounded-lg p-3 mb-3">
-        <p className="text-xs font-medium text-gray-300 mb-1.5">Today's Task</p>
-        <p className="text-sm text-gray-200">{challenge.dailyTask}</p>
+        <button
+          onClick={() => {
+            const timestamp = Date.now()
+            setLastCompletedAt(timestamp)
+            localStorage.setItem(challengeKey, String(timestamp))
+            onComplete()
+          }}
+          disabled={isBlocked}
+          className={`w-full ${
+            isBlocked
+              ? 'bg-gray-600 opacity-50 cursor-not-allowed'
+              : 'bg-[#10b981] hover:bg-[#0ea571]'
+          } text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm`}
+        >
+          <CheckCircle className="w-4 h-4" />
+          {isBlocked ? 'Completed Today' : 'Mark as Done'}
+        </button>
       </div>
-
-      <button
-        onClick={() => {
-          const timestamp = Date.now()
-          setLastCompletedAt(timestamp)
-          localStorage.setItem(challengeKey, String(timestamp))
-          onComplete()
-        }}
-        disabled={isBlocked}
-        className={`w-full ${
-          isBlocked
-            ? 'bg-gray-600 opacity-50 cursor-not-allowed'
-            : 'bg-[#10b981] hover:bg-[#0ea571]'
-        } text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm`}
-      >
-        <CheckCircle className="w-4 h-4" />
-        {isBlocked ? 'Completed Today' : 'Mark as Done'}
-      </button>
-    </div>
+    </Motion.div>
   )
 }
 
@@ -366,7 +374,7 @@ const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
 }
 
 // ChallengeCard Component
-const ChallengeCard = ({ challenge, onStart }) => {
+const ChallengeCard = ({ challenge, onStart, index }) => {
   const Icon = categoryIcons[challenge.category]
 
   const difficultyColors = {
@@ -376,59 +384,71 @@ const ChallengeCard = ({ challenge, onStart }) => {
   }
 
   return (
-    <div className="bg-[#1a2b23] border border-gray-700/50 rounded-lg p-4 hover:border-[#10b981]/40 transition-all">
-      <div className="flex items-start justify-between mb-2.5">
-        <div className="flex items-center gap-1.5">
-          <Icon className="w-4 h-4 text-[#10b981]" />
-          <span className="text-xs font-medium text-gray-400">
-            {challenge.category}
+    <Motion.div
+      initial={{ opacity: 0, y: 20 }} // start slightly below
+      animate={{ opacity: 1, y: 0 }} // move to natural position
+      transition={{
+        duration: 0.1,
+        delay: index * 0.15, // stagger one by one
+        type: 'spring',
+        stiffness: 100,
+      }}
+    >
+      <div className="bg-[#1a2b23] border border-gray-700/50 rounded-lg p-4 hover:border-[#10b981]/40 transition-all">
+        <div className="flex items-start justify-between mb-2.5">
+          <div className="flex items-center gap-1.5">
+            <Icon className="w-4 h-4 text-[#10b981]" />
+            <span className="text-xs font-medium text-gray-400">
+              {challenge.category}
+            </span>
+          </div>
+          <span
+            className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyColors[challenge.difficulty]}`}
+          >
+            {challenge.difficulty}
           </span>
         </div>
-        <span
-          className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyColors[challenge.difficulty]}`}
-        >
-          {challenge.difficulty}
-        </span>
+
+        <h3 className="text-sm font-semibold text-white mb-2">
+          {challenge.title}
+        </h3>
+
+        <div className="flex items-center gap-3 mb-3 text-xs text-gray-400">
+          <span>🕒 {challenge.duration}</span>
+          <span>🌱 {challenge.impact}</span>
+        </div>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button className="w-full bg-[#10b981] hover:bg-[#0ea571] text-white cursor-pointer font-semibold py-2 px-3 rounded-lg transition-colors text-sm">
+              Start Challenge
+            </button>
+          </AlertDialogTrigger>
+
+          <AlertDialogContent className="bg-[#1a2b23]">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Start this challenge?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Once started, you can track your progress daily until
+                completion.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border border-green-600 text-green-700 cursor-pointer hover:bg-green-50">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => onStart(challenge)}
+                className="bg-emerald-600 cursor-pointer text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500"
+              >
+                Start
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-
-      <h3 className="text-sm font-semibold text-white mb-2">
-        {challenge.title}
-      </h3>
-
-      <div className="flex items-center gap-3 mb-3 text-xs text-gray-400">
-        <span>🕒 {challenge.duration}</span>
-        <span>🌱 {challenge.impact}</span>
-      </div>
-
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <button className="w-full bg-[#10b981] hover:bg-[#0ea571] text-white cursor-pointer font-semibold py-2 px-3 rounded-lg transition-colors text-sm">
-            Start Challenge
-          </button>
-        </AlertDialogTrigger>
-
-        <AlertDialogContent className="bg-[#1a2b23]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Start this challenge?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Once started, you can track your progress daily until completion.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border border-green-600 text-green-700 cursor-pointer hover:bg-green-50">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => onStart(challenge)}
-              className="bg-emerald-600 cursor-pointer text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500"
-            >
-              Start
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    </Motion.div>
   )
 }
 
@@ -555,48 +575,38 @@ export default function EcoChallenge() {
   return (
     <div className="min-h-screen bg-[#0a0f0d]">
       {/*     ------------Success alert message block----------      */}
-      {showSuccessAlert && activeChallenges.length > 0 && (
-        <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
-          <Alert className="border-emerald-500/50 bg-emerald-950/90 backdrop-blur-md shadow-lg">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            <AlertTitle className="text-emerald-400">
-              Challenge Started
-            </AlertTitle>
-            <AlertDescription className="text-gray-300">
-              Challenge "{activeChallenges[activeChallenges.length - 1]?.title}"
-              has started successfully.
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-      {/* ----------------Task success alert message block------------ */}
-      {showTaskSuccessAlert && (
-        <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
-          <Alert className="border-emerald-500/50 bg-emerald-950/90 backdrop-blur-md shadow-lg">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            <AlertTitle className="text-emerald-400">Task Completed</AlertTitle>
-            <AlertDescription className="text-gray-300">
-              Task "{lastCompletedTaskTitle}" has completed successfully. See
-              you tomorrow!
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-      {/*     ------------Challenge completed alert message block----------      */}
-      {showChallengeCompleteAlert && showCompletedChallengeTitle && (
-        <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
-          <Alert className="border-emerald-500/50 bg-emerald-950/90 backdrop-blur-md shadow-lg">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            <AlertTitle className="text-emerald-400">
-              Challenge Completed
-            </AlertTitle>
-            <AlertDescription className="text-gray-300">
-              🎉 Challenge completed! You've finished "
-              {showCompletedChallengeTitle}"
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
+      <div className="fixed top-4 right-4 z-50 flex flex-col space-y-2 w-[90vw] sm:w-auto">
+        {/* Challenge Started */}
+        <SuccessAlert
+          show={showSuccessAlert && activeChallenges.length > 0}
+          onClose={() => setShowSuccessAlert(false)}
+          title="Challenge Started"
+          message={`Challenge "${activeChallenges[activeChallenges.length - 1]?.title}" has started successfully.`}
+          autoClose
+          duration={3000}
+        />
+
+        {/* Task Completed */}
+        <TaskAlert
+          show={showTaskSuccessAlert}
+          onClose={() => setShowTaskSuccessAlert(false)}
+          title="Task Completed"
+          message={`Task "${lastCompletedTaskTitle}" has completed successfully. See you tomorrow!`}
+          autoClose
+          duration={3000}
+        />
+
+        {/* Challenge Completed */}
+        <ChallengeCompleteAlert
+          show={showChallengeCompleteAlert && showCompletedChallengeTitle}
+          onClose={() => setShowChallengeCompleteAlert(false)}
+          title="Challenge Completed"
+          message={`🎉 Challenge completed! You've finished "${showCompletedChallengeTitle}"`}
+          autoClose
+          duration={3000}
+        />
+      </div>
+
       <div className="max-w-6xl mx-auto p-3 md:p-4">
         {/* Header & Stats Combined */}
         <div className="flex items-center justify-between mb-4">
@@ -725,9 +735,10 @@ export default function EcoChallenge() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto p-4 bg-[#0f1814] rounded-lg [mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]
              [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
             >
-              {filteredChallenges.map((challenge) => (
+              {filteredChallenges.map((challenge, idx) => (
                 <ChallengeCard
-                  key={challenge.id}
+                  key={`${challenge.id}-${filters.difficulty}-${filters.duration}-${filters.category}`}
+                  index={idx}
                   challenge={challenge}
                   onStart={handleStartChallenge}
                 />
