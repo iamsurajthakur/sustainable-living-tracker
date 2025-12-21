@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   CheckCircle,
+  CheckCircle2,
   Leaf,
   Zap,
   Trash2,
@@ -10,7 +11,6 @@ import {
   Flame,
   Filter,
   X,
-  CheckCircle2Icon,
 } from 'lucide-react'
 
 import {
@@ -141,10 +141,35 @@ const categoryIcons = {
 const ActiveChallengeCard = ({ challenge, currentDay, onComplete }) => {
   const totalDays = parseInt(challenge.duration)
   const progress = (currentDay / totalDays) * 100
-  const Icon = categoryIcons[challenge.category]
+  const Icon = categoryIcons[challenge.category] || (() => null)
+
+  const challengeKey = `lastCompletedAt_${challenge.id}`
+  const [lastCompletedAt, setLastCompletedAt] = useState(() => {
+    const stored = localStorage.getItem(challengeKey)
+    return stored ? Number(stored) : null
+  })
+
+  const isSameDay = (timestamp1, timestamp2) => {
+    const d1 = new Date(timestamp1)
+    const d2 = new Date(timestamp2)
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    )
+  }
+
+  const isBlocked =
+    lastCompletedAt !== null && isSameDay(lastCompletedAt, Date.now())
+
+  useEffect(() => {
+    // Optional: re-check when component mounts or challenge changes
+    const stored = localStorage.getItem(challengeKey)
+    if (stored) setLastCompletedAt(Number(stored))
+  }, [challengeKey])
 
   return (
-    <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4 mb-4">
+    <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1.5">
@@ -173,7 +198,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete }) => {
           <div
             className="bg-[#10b981] h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
-          ></div>
+          />
         </div>
       </div>
 
@@ -183,11 +208,21 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete }) => {
       </div>
 
       <button
-        onClick={onComplete}
-        className="w-full bg-[#10b981] hover:bg-[#0ea571] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+        onClick={() => {
+          const timestamp = Date.now()
+          setLastCompletedAt(timestamp)
+          localStorage.setItem(challengeKey, String(timestamp))
+          onComplete()
+        }}
+        disabled={isBlocked}
+        className={`w-full ${
+          isBlocked
+            ? 'bg-gray-600 opacity-50 cursor-not-allowed'
+            : 'bg-[#10b981] hover:bg-[#0ea571]'
+        } text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm`}
       >
         <CheckCircle className="w-4 h-4" />
-        Mark as Done
+        {isBlocked ? 'Completed Today' : 'Mark as Done'}
       </button>
     </div>
   )
@@ -376,7 +411,7 @@ const ChallengeCard = ({ challenge, onStart }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Start this challenge?</AlertDialogTitle>
             <AlertDialogDescription>
-              Once started, the challenge cannot be paused or reset.
+              Once started, you can track your progress daily until completion.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -399,20 +434,46 @@ const ChallengeCard = ({ challenge, onStart }) => {
 
 // Main App Component
 export default function EcoChallenge() {
-  const [activeChallenge, setActiveChallenge] = useState('')
+  // Load active challenges from localStorage
+  const [activeChallenges, setActiveChallenges] = useState(() => {
+    const stored = localStorage.getItem('activeChallenges')
+    return stored ? JSON.parse(stored) : []
+  })
+
   const [showSuccessAlert, setShowSuccessAlert] = useState(false)
-  const [currentDay, setCurrentDay] = useState(3)
+  const [showTaskSuccessAlert, setShowTaskSuccessAlert] = useState(false)
+  const [lastCompletedTaskTitle, setLastCompletedTaskTitle] = useState('')
+  const [showCompletedChallengeTitle, setCompletedChallengeTitle] = useState()
+  const [showChallengeCompleteAlert, setShowChallengeCompleteAlert] =
+    useState(false)
   const [filters, setFilters] = useState({
     difficulty: null,
     duration: null,
     category: null,
   })
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
-  const [stats, setStats] = useState({
-    streak: 0,
-    completed: 0,
-    ecoPoints: 0,
+
+  // Load stats from localStorage
+  const [stats, setStats] = useState(() => {
+    const stored = localStorage.getItem('ecoStats')
+    return stored
+      ? JSON.parse(stored)
+      : {
+          streak: 0,
+          completed: 0,
+          ecoPoints: 0,
+        }
   })
+
+  // Persist active challenges whenever they change
+  useEffect(() => {
+    localStorage.setItem('activeChallenges', JSON.stringify(activeChallenges))
+  }, [activeChallenges])
+
+  // Persist stats whenever they change
+  useEffect(() => {
+    localStorage.setItem('ecoStats', JSON.stringify(stats))
+  }, [stats])
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === 'clear') {
@@ -425,41 +486,63 @@ export default function EcoChallenge() {
     }
   }
 
-  const handleComplete = () => {
-    const totalDays = parseInt(activeChallenge.duration)
-    if (currentDay < totalDays) {
-      setCurrentDay((prev) => prev + 1)
-      setStats((prev) => ({
-        ...prev,
-        streak: prev.streak + 1,
-        ecoPoints: prev.ecoPoints + 10,
-      }))
-      alert('Great job! Task marked as complete. See you tomorrow!')
-    } else {
-      setStats((prev) => ({
-        ...prev,
-        completed: prev.completed + 1,
-        ecoPoints: prev.ecoPoints + 50,
-      }))
-      alert(
-        `🎉 Challenge completed! You've finished "${activeChallenge.title}"`
-      )
-      setActiveChallenge(null)
-      setCurrentDay(1)
-    }
+  const handleComplete = (challengeId) => {
+    setActiveChallenges((prev) => {
+      const updated = prev.map((ac) => {
+        if (ac.id !== challengeId) return ac
+
+        const totalDays = parseInt(ac.duration)
+        const nextDay = ac.currentDay + 1
+
+        // Award points for completing the day
+        setStats((prevStats) => ({
+          ...prevStats,
+          streak: prevStats.streak + 1,
+          ecoPoints: prevStats.ecoPoints + 10,
+        }))
+
+        if (nextDay >= totalDays) {
+          // Challenge completed!
+          setCompletedChallengeTitle(ac.title)
+
+          setStats((prevStats) => ({
+            ...prevStats,
+            completed: prevStats.completed + 1,
+            ecoPoints: prevStats.ecoPoints + 50,
+          }))
+
+          setShowChallengeCompleteAlert(true)
+          setTimeout(() => {
+            setShowChallengeCompleteAlert(false)
+            setCompletedChallengeTitle(null)
+          }, 3000)
+
+          return null // Remove completed challenge
+        } else {
+          // Progress to next day
+          setLastCompletedTaskTitle(ac.title)
+          setShowTaskSuccessAlert(true)
+          setTimeout(() => setShowTaskSuccessAlert(false), 3000)
+
+          return { ...ac, currentDay: nextDay }
+        }
+      })
+
+      return updated.filter(Boolean) // Remove nulls
+    })
   }
 
   const handleStartChallenge = (challenge) => {
-    setActiveChallenge(challenge)
-    setCurrentDay(0)
-    setShowSuccessAlert(true)
+    // Add challenge to active challenges with currentDay = 0
+    setActiveChallenges((prev) => [...prev, { ...challenge, currentDay: 0 }])
 
-    // optional auto-hide
+    setShowSuccessAlert(true)
     setTimeout(() => setShowSuccessAlert(false), 3000)
   }
 
   const filteredChallenges = challengesData.filter((challenge) => {
-    if (activeChallenge && challenge.id === activeChallenge.id) return false
+    // Filter out all active challenges
+    if (activeChallenges.some((ac) => ac.id === challenge.id)) return false
     if (filters.difficulty && challenge.difficulty !== filters.difficulty)
       return false
     if (filters.duration && challenge.duration !== filters.duration)
@@ -472,20 +555,48 @@ export default function EcoChallenge() {
   return (
     <div className="min-h-screen bg-[#0a0f0d]">
       {/*     ------------Success alert message block----------      */}
-      {showSuccessAlert && (
+      {showSuccessAlert && activeChallenges.length > 0 && (
         <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
           <Alert className="border-emerald-500/50 bg-emerald-950/90 backdrop-blur-md shadow-lg">
-            <CheckCircle2Icon className="h-4 w-4 text-emerald-400" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
             <AlertTitle className="text-emerald-400">
               Challenge Started
             </AlertTitle>
             <AlertDescription className="text-gray-300">
-              Challenge "{activeChallenge?.title}" has started successfully.
+              Challenge "{activeChallenges[activeChallenges.length - 1]?.title}"
+              has started successfully.
             </AlertDescription>
           </Alert>
         </div>
       )}
-
+      {/* ----------------Task success alert message block------------ */}
+      {showTaskSuccessAlert && (
+        <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
+          <Alert className="border-emerald-500/50 bg-emerald-950/90 backdrop-blur-md shadow-lg">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <AlertTitle className="text-emerald-400">Task Completed</AlertTitle>
+            <AlertDescription className="text-gray-300">
+              Task "{lastCompletedTaskTitle}" has completed successfully. See
+              you tomorrow!
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+      {/*     ------------Challenge completed alert message block----------      */}
+      {showChallengeCompleteAlert && showCompletedChallengeTitle && (
+        <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
+          <Alert className="border-emerald-500/50 bg-emerald-950/90 backdrop-blur-md shadow-lg">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <AlertTitle className="text-emerald-400">
+              Challenge Completed
+            </AlertTitle>
+            <AlertDescription className="text-gray-300">
+              🎉 Challenge completed! You've finished "
+              {showCompletedChallengeTitle}"
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto p-3 md:p-4">
         {/* Header & Stats Combined */}
         <div className="flex items-center justify-between mb-4">
@@ -560,16 +671,29 @@ export default function EcoChallenge() {
         </div>
 
         {/* Active Challenge Section */}
-        {activeChallenge && (
-          <ActiveChallengeCard
-            challenge={activeChallenge}
-            currentDay={currentDay}
-            onComplete={handleComplete}
-          />
+        {activeChallenges.length > 0 && (
+          <div
+            className="mb-4 p-2 max-h-[400px] overflow-y-auto [mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]
+             [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
+          >
+            <h2 className="text-base font-semibold text-white mb-3">
+              Active Challenges ({activeChallenges.length})
+            </h2>
+            <div className="space-y-3">
+              {activeChallenges.map((activeChallenge) => (
+                <ActiveChallengeCard
+                  key={activeChallenge.id}
+                  challenge={activeChallenge}
+                  currentDay={activeChallenge.currentDay}
+                  onComplete={() => handleComplete(activeChallenge.id)}
+                />
+              ))}
+            </div>
+          </div>
         )}
 
         {/* No Active Challenge State */}
-        {!activeChallenge && (
+        {activeChallenges.length === 0 && (
           <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4 mb-4 text-center">
             <Leaf className="w-8 h-8 text-[#10b981] mx-auto mb-2" />
             <h2 className="text-base font-semibold text-white mb-0.5">
@@ -585,7 +709,9 @@ export default function EcoChallenge() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold text-white">
-              {activeChallenge ? 'More Challenges' : 'Available Challenges'}
+              {activeChallenges.length > 0
+                ? 'More Challenges'
+                : 'Available Challenges'}
             </h2>
             <FilterDropdown
               filters={filters}
