@@ -392,7 +392,7 @@ export default function Hero() {
           </button>
         </div>
 
-        {/* Logo Section */}
+        {/* ---------Logo Section-------- */}
         <div className="flex flex-wrap items-center justify-center gap-14 mt-30 max-md:px-2 opacity-40 animate-[fadeIn_1s_ease-out_0.6s_both]">
           <div className="text-2xl font-bold tracking-wider hover:opacity-100 transition-opacity duration-300">
             <svg

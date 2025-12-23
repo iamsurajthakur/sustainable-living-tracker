@@ -208,7 +208,7 @@ const Testimonials = () => {
           </div>
           <p className="text-sm text-zinc-500">
             Trusted by{' '}
-            <span className="font-medium text-zinc-300">100,000+</span> users
+            <span className="font-medium text-zinc-300">100,00+</span> users
           </p>
         </div>
       </div>
