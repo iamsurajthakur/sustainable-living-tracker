@@ -7,7 +7,7 @@ const mockActivities = [
   {
     id: 1,
     title: 'Took 5-minute shower',
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Yesterday
+    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
     category: 'Water',
     impact: 'Saved ~40L water',
   },
@@ -23,28 +23,28 @@ const mockActivities = [
   {
     id: 3,
     title: 'Composted food scraps',
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     category: 'Waste',
     impact: 'Diverted 0.3kg from landfill',
   },
   {
     id: 4,
     title: 'Used reusable water bottle',
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
     category: 'Waste',
     impact: 'Avoided 1 plastic bottle',
   },
   {
     id: 5,
     title: 'Carpooled with colleagues',
-    timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+    timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
     category: 'Transport',
     impact: 'Saved 2kg CO₂',
   },
   {
     id: 6,
     title: 'Fixed leaking faucet',
-    timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+    timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
     category: 'Water',
     impact: 'Prevented 20L daily waste',
   },

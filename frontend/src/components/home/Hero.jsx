@@ -327,9 +327,12 @@ export default function Hero() {
               FAQ
             </a>
 
-            <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-xl">
+            <Link
+              to="/login"
+              className="md:block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full transition"
+            >
               Login
-            </button>
+            </Link>
           </div>
         )}
 
