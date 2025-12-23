@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
+import LoadingAnimation from '@/components/home/Loading'
 
-// Lazy load pages
 const Home = lazy(() => import('./pages/Home'))
 const Layout = lazy(() => import('./pages/Layout'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -10,7 +10,7 @@ const Login = lazy(() => import('./pages/Login'))
 
 function App() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingAnimation />}>
       <Routes>
         <Route path="/" element={<Home />} />
 

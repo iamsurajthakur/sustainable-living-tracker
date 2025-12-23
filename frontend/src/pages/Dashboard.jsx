@@ -1,8 +1,8 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
+import LoadingAnimation from '@/components/home/Loading'
 
-// Lazy-load dashboard sub-components
 const Overview = lazy(() => import('@/components/dashboard/Overview'))
 const LogActivities = lazy(() => import('@/components/dashboard/LogActivities'))
 const EcoChallenge = lazy(() => import('@/components/dashboard/EcoChallenge'))
@@ -40,7 +40,7 @@ const Dashboard = () => {
       <Sidebar active={active} onSelect={setActive} />
 
       <main className="">
-        <Suspense fallback={<div>Loading tab...</div>}>
+        <Suspense fallback={<LoadingAnimation />}>
           <AnimatePresence mode="wait">
             <Motion.div
               key={active}
