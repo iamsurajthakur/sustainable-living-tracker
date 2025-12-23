@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
-import Overview from '@/components/dashboard/Overview'
-import LogActivities from '@/components/dashboard/LogActivities'
-import EcoChallenge from '@/components/dashboard/EcoChallenge'
-import History from '@/components/dashboard/History'
-import RecentActivity from '@/components/dashboard/RecentActivity'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
+
+// Lazy-load dashboard sub-components
+const Overview = lazy(() => import('@/components/dashboard/Overview'))
+const LogActivities = lazy(() => import('@/components/dashboard/LogActivities'))
+const EcoChallenge = lazy(() => import('@/components/dashboard/EcoChallenge'))
+const History = lazy(() => import('@/components/dashboard/History'))
+const RecentActivity = lazy(
+  () => import('@/components/dashboard/RecentActivity')
+)
 
 const Dashboard = () => {
   const [active, setActive] = useState(
@@ -36,17 +40,19 @@ const Dashboard = () => {
       <Sidebar active={active} onSelect={setActive} />
 
       <main className="">
-        <AnimatePresence mode="wait">
-          <Motion.div
-            key={active}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-          >
-            {renderContent()}
-          </Motion.div>
-        </AnimatePresence>
+        <Suspense fallback={<div>Loading tab...</div>}>
+          <AnimatePresence mode="wait">
+            <Motion.div
+              key={active}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              {renderContent()}
+            </Motion.div>
+          </AnimatePresence>
+        </Suspense>
       </main>
     </div>
   )
