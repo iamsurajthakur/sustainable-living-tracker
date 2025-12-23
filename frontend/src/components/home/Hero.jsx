@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion as Motion, AnimatePresence } from 'framer-motion'
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
@@ -270,71 +271,67 @@ export default function Hero() {
         </nav>
 
         {/* MOBILE MENU OVERLAY — OUTSIDE NAVBAR (FIX!) */}
-        {open && (
-          <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[60] flex flex-col items-center justify-center gap-6 transition-all duration-300">
-            <button
-              className="absolute top-8 right-8 text-white p-2 hover:bg-white/10 rounded-full"
-              onClick={() => setOpen(false)}
+        <AnimatePresence>
+          {open && (
+            <Motion.div
+              className="fixed inset-0 bg-black/95 backdrop-blur-md z-[60] flex flex-col items-center justify-center gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+              <button
+                className="absolute top-8 right-8 text-white p-2 hover:bg-white/10 rounded-full"
+                onClick={() => setOpen(false)}
               >
-                <path d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
 
-            <a
-              className="text-2xl text-white"
-              href="#home"
-              onClick={(e) => handleLinkClick(e, 'home')}
-            >
-              Home
-            </a>
+              {[
+                ['Home', 'home'],
+                ['Features', 'features'],
+                ['Testimonials', 'testimonials'],
+                ['Contact', 'contact'],
+                ['FAQ', 'faq'],
+              ].map(([label, id], i) => (
+                <Motion.a
+                  key={id}
+                  href={`#${id}`}
+                  onClick={(e) => handleLinkClick(e, id)}
+                  className="text-2xl text-white"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ delay: 0.1 + i * 0.05 }}
+                >
+                  {label}
+                </Motion.a>
+              ))}
 
-            <a
-              className="text-2xl text-white"
-              href="#features"
-              onClick={(e) => handleLinkClick(e, 'features')}
-            >
-              Features
-            </a>
-
-            <a
-              className="text-2xl text-white"
-              href="#testimonials"
-              onClick={(e) => handleLinkClick(e, 'testimonials')}
-            >
-              Testimonials
-            </a>
-
-            <a
-              className="text-2xl text-white"
-              href="#contact"
-              onClick={(e) => handleLinkClick(e, 'contact')}
-            >
-              Contact
-            </a>
-
-            <a
-              className="text-2xl text-white"
-              href="#faq"
-              onClick={(e) => handleLinkClick(e, 'faq')}
-            >
-              FAQ
-            </a>
-
-            <Link
-              to="/login"
-              className="md:block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full transition"
-            >
-              Login
-            </Link>
-          </div>
-        )}
+              <Motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ delay: 0.35 }}
+              >
+                <Link
+                  to="/login"
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full transition"
+                >
+                  Login
+                </Link>
+              </Motion.div>
+            </Motion.div>
+          )}
+        </AnimatePresence>
 
         {/* COMMUNITY BUBBLE */}
         <div className="flex flex-wrap items-center justify-center p-1.5 mt-24 rounded-full border border-green-900 bg-green-700/15 text-xs animate-[fadeIn_0.8s_ease-out_0.2s_both]">
