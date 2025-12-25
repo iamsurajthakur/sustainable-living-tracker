@@ -23,7 +23,7 @@ export default function LoadingAnimation() {
         <div className="absolute inset-0 w-24 h-24 bg-green-500 rounded-full opacity-20 blur-xl animate-pulse"></div>
       </div>
 
-      <style jsx>{`
+      <style jsx="true">{`
         @keyframes spin-slow {
           from {
             transform: rotate(0deg);
