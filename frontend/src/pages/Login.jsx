@@ -10,7 +10,7 @@ const Login = () => {
   const [isLogin, setIsLogin] = useState(() => state !== 'register')
 
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -99,7 +99,7 @@ const Login = () => {
                 </svg>
                 <input
                   type="text"
-                  name="name"
+                  name="fullName"
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Full name"
