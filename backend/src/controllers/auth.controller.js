@@ -98,4 +98,28 @@ const loginUser = asyncHandler(async (req, res) => {
     )
 })
 
-export { registerUser, loginUser }
+const logout = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $unset: {
+        refreshToken: 1
+      }
+    },
+    {
+      new: true
+    }
+  )
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  }
+
+  return res
+    .status(200)
+    .clearCookie('refreshToken', options)
+    .json(new apiResponse(200, {}, 'User has been logged out.'))
+})
+
+export { registerUser, loginUser, logout }
