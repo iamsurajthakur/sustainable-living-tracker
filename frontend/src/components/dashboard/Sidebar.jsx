@@ -7,7 +7,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar'
 import {
@@ -26,7 +25,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
+import { logoutUser } from '@/api/auth.js'
+import { useNavigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { AuthContext } from '../secure/AuthContext'
 const menuItems = [
   {
     title: 'Dashboard',
@@ -56,6 +58,28 @@ const menuItems = [
 ]
 
 export default function DashboardSidebar({ active, onSelect }) {
+  const navigate = useNavigate()
+  const { setAccessToken } = useContext(AuthContext)
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser()
+
+      // Clear the access token from context
+      setAccessToken(null)
+
+      // Remove from localStorage (if you were using it)
+      localStorage.removeItem('accessToken')
+
+      // Navigate to login
+      navigate('/login', { replace: true })
+
+      console.log('✅ Logged out successfully')
+    } catch (error) {
+      console.error('Logout failed:', error.response?.data || error.message)
+    }
+  }
+
   const { state, isMobile, setOpenMobile } = useSidebar()
   const isCollapsed = state === 'collapsed'
 
@@ -157,7 +181,10 @@ export default function DashboardSidebar({ active, onSelect }) {
                   <Settings className="mr-2 size-4" />
                   Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-gray-800 text-red-400 hover:text-red-300 cursor-pointer focus:bg-gray-800 focus:text-red-300">
+                <DropdownMenuItem
+                  className="hover:bg-gray-800 text-red-400 hover:text-red-300 cursor-pointer focus:bg-gray-800 focus:text-red-300"
+                  onSelect={handleLogout}
+                >
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>

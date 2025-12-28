@@ -1,14 +1,16 @@
-import React, { useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { useSearchParams } from 'react-router-dom'
+// import { useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { loginUser, registerUser } from '@/api/auth.js'
+import { AuthContext } from '@/components/secure/AuthContext'
 
 const Login = () => {
-  const [searchParams] = useSearchParams()
-  const state = searchParams.get('state')
+  const navigate = useNavigate()
+  const { accessToken, setAccessToken, loading } = useContext(AuthContext)
 
-  const [isLogin, setIsLogin] = useState(() => state !== 'register')
-
+  const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -18,10 +20,66 @@ const Login = () => {
     agreeToTerms: false,
   })
 
-  const handleSubmit = (e) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    console.log('Login page - accessToken:', accessToken, 'loading:', loading)
+    if (!loading && accessToken) {
+      console.log('Already authenticated - redirecting to dashboard')
+      navigate('/dashboard', { replace: true })
+    }
+  }, [accessToken, loading, navigate])
+
+  // Show nothing while checking auth
+  if (loading) {
+    return null // or return <LoadingAnimation />
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     console.log('Form submitted:', formData)
-    // Add your authentication logic here
+
+    try {
+      let response
+      if (isLogin) {
+        response = await loginUser({
+          email: formData.email,
+          password: formData.password,
+        })
+        console.log('Login successful: ', response.data)
+        console.log('Full response structure:', response)
+
+        // Check if accessToken is in response.data.data or response.data
+        const token =
+          response.data.data?.accessToken || response.data.accessToken
+        console.log('Extracted token:', token)
+
+        if (token) {
+          setAccessToken(token)
+        } else {
+          console.error('No access token found in response')
+        }
+      } else {
+        response = await registerUser({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+        })
+        console.log('Register successful: ', response.data)
+
+        const token =
+          response.data.data?.accessToken || response.data.accessToken
+        console.log('Extracted token:', token)
+
+        if (token) {
+          setAccessToken(token)
+        } else {
+          console.error('No access token found in response')
+        }
+      }
+    } catch (error) {
+      console.error('Auth error: ', error.response?.data || error.message)
+    }
   }
 
   const handleInputChange = (e) => {
