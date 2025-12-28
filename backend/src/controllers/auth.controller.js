@@ -72,6 +72,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
 
+  if(!accessToken){
+    throw new apiError(500, 'Access Token generation failed')
+  }
+
   const loggedInUser = {
     _id: user._id,
     fullName: user.fullName,
@@ -80,12 +84,13 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'development', // Have to set "production" in the hosting platform.
+    secure: process.env.NODE_ENV === 'production', // Have to set "production" in the hosting platform.
     sameSite: 'strict'
   }
 
   return res
     .status(200)
+    .cookie('accessToken', accessToken, options)
     .cookie('refreshToken', refreshToken, options)
     .json(
       new apiResponse(
@@ -123,8 +128,7 @@ const logout = asyncHandler(async (req, res) => {
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
-
+  const incomingRefreshToken = req.cookies.refreshToken
   if(!incomingRefreshToken){
     throw new apiError(401, 'Unauthorized request')
   }
@@ -132,12 +136,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   try {
     const decodedRefreshToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
 
-    if(!decodedRefreshToken){
-      throw new apiError(401, 'Invalid request')
-    }
-
     const user = await User.findById(decodedRefreshToken?._id)
-
     if(!user){
       throw new apiError(401, 'Invalid refresh token')
     }
@@ -148,20 +147,27 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const option = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'development',
-      sameSite: 'strict'
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
     }
 
-    const { newAccessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id)
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user?._id)
 
+    user.refreshToken = refreshToken
+    await user.save()
+
+    if(!accessToken || !refreshToken){
+      throw new apiError(500, 'unauthorized request')
+    }
     res
       .status(200)
-      .cookie('refreshToken', newRefreshToken, option)
-      .cookie('accessToken', newAccessToken, option)
+      .cookie('refreshToken', refreshToken, option)
+      .cookie('accessToken', accessToken, option)
       .json(
         new apiResponse(200,
-          { newAccessToken, newRefreshToken },
-          'access token refreshed'
+          { accessToken, refreshToken },
+          'Access token refreshed'
         )
       )
   } catch (error) {
@@ -169,4 +175,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 })
 
-export { registerUser, loginUser, logout, refreshAccessToken }
+const dashboard = asyncHandler(async (req, res) => {
+  return res.status(200).json(new apiResponse(200, 'Dashboard Page'))
+})
+
+export { registerUser, loginUser, logout, refreshAccessToken,dashboard }

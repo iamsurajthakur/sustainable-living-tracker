@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "dev": "nodemon -r dotenv/config index.js"
+    "dev": "nodemon --inspect -r dotenv/config index.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
