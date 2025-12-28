@@ -30,6 +30,9 @@ app.use(cookieParser())
 app.get('/health', (_, res) => {
   res.status(200).json({ status: 'OK' })
 })
+app.get('/', (_, res) => {
+  res.send('API is running...')
+})
 
 //import routes
 import userRouter from './routes/auth.route.js'
