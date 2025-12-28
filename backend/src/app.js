@@ -1,8 +1,27 @@
 import express from 'express'
 import errorHandler from './middlewares/errorHandler.middleware.js'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
 
 const app = express()
+
+const allowedOrigins = [
+  process.env.CORS_ORIGIN_DEV,
+  process.env.CORS_ORIGIN_PROD
+].filter(Boolean)
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true)
+
+    if (allowedOrigins.includes(origin)) {
+      cb(null, true)
+    } else {
+      cb(null, false) // clean CORS rejection
+    }
+  },
+  credentials: true,
+}))
 
 app.use(express.json({ limit: '20kb' }))
 app.use(express.urlencoded({ extended: true, limit: '16kb' }))
