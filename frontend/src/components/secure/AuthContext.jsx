@@ -1,42 +1,42 @@
-import React, { createContext, useState, useEffect } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 import { refreshAccessToken } from '../../api/auth.js'
 
-export const AuthContext = createContext()
+export const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      console.log('🔄 Checking authentication...')
+    const initAuth = async () => {
       try {
         const res = await refreshAccessToken()
-        console.log('✅ Refresh token successful:', res.data)
-
         const token = res.data.data?.accessToken || res.data.accessToken
-        console.log('🎯 Setting accessToken to:', token)
 
         setAccessToken(token)
-      } catch (error) {
-        console.error(
-          '❌ Refresh token failed:',
-          error.response?.data || error.message
-        )
+        setIsAuthenticated(true)
+      } catch {
         setAccessToken(null)
+        setIsAuthenticated(false)
       } finally {
         setLoading(false)
-        console.log('✨ Loading complete')
       }
     }
-    checkAuth()
+
+    initAuth()
   }, [])
 
-  console.log('📍 Current accessToken state:', accessToken)
-  console.log('📍 Current loading state:', loading)
-
   return (
-    <AuthContext.Provider value={{ accessToken, setAccessToken, loading }}>
+    <AuthContext.Provider
+      value={{
+        accessToken,
+        isAuthenticated,
+        setAccessToken,
+        setIsAuthenticated,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

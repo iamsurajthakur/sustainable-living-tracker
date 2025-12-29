@@ -73,8 +73,6 @@ export default function DashboardSidebar({ active, onSelect }) {
 
       // Navigate to login
       navigate('/login', { replace: true })
-
-      console.log('✅ Logged out successfully')
     } catch (error) {
       console.error('Logout failed:', error.response?.data || error.message)
     }

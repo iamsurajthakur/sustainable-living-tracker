@@ -2,15 +2,18 @@ import React, { useContext, useState, useEffect } from 'react'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
 // import { useSearchParams } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { loginUser, registerUser } from '@/api/auth.js'
 import { AuthContext } from '@/components/secure/AuthContext'
 
 const Login = () => {
   const navigate = useNavigate()
   const { accessToken, setAccessToken, loading } = useContext(AuthContext)
+  const [searchParams] = useSearchParams()
+  const state = searchParams.get('state')
 
-  const [isLogin, setIsLogin] = useState(true)
+  const [isLogin, setIsLogin] = useState(() => state != 'register')
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -22,9 +25,7 @@ const Login = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    console.log('Login page - accessToken:', accessToken, 'loading:', loading)
     if (!loading && accessToken) {
-      console.log('Already authenticated - redirecting to dashboard')
       navigate('/dashboard', { replace: true })
     }
   }, [accessToken, loading, navigate])
@@ -36,7 +37,6 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Form submitted:', formData)
 
     try {
       let response
@@ -45,13 +45,10 @@ const Login = () => {
           email: formData.email,
           password: formData.password,
         })
-        console.log('Login successful: ', response.data)
-        console.log('Full response structure:', response)
 
         // Check if accessToken is in response.data.data or response.data
         const token =
           response.data.data?.accessToken || response.data.accessToken
-        console.log('Extracted token:', token)
 
         if (token) {
           setAccessToken(token)
@@ -65,17 +62,8 @@ const Login = () => {
           password: formData.password,
           confirmPassword: formData.confirmPassword,
         })
-        console.log('Register successful: ', response.data)
-
-        const token =
-          response.data.data?.accessToken || response.data.accessToken
-        console.log('Extracted token:', token)
-
-        if (token) {
-          setAccessToken(token)
-        } else {
-          console.error('No access token found in response')
-        }
+        navigate('/login', { replace: true })
+        setIsLogin(true)
       }
     } catch (error) {
       console.error('Auth error: ', error.response?.data || error.message)

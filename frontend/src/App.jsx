@@ -4,10 +4,10 @@ import { Route, Routes } from 'react-router-dom'
 import LoadingAnimation from '@/components/home/Loading'
 import ProtectedRoute from './components/secure/ProtectedRoute'
 import { AuthContext } from './components/secure/AuthContext'
-import { SidebarProvider } from '@/components/ui/sidebar' // Add this import
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 const Home = lazy(() => import('./pages/Home'))
-const Layout = lazy(() => import('./pages/Layout'))
+// const Layout = lazy(() => import('./pages/Layout'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Login = lazy(() => import('./pages/Login'))
 
