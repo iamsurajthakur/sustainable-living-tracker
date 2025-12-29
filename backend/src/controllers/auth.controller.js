@@ -85,7 +85,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // Have to set "production" in the hosting platform.
-    sameSite: 'strict'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 
   return res
@@ -118,7 +118,7 @@ const logout = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'development',
-    sameSite: 'strict'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 
   return res
@@ -148,7 +148,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const option = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/'
     }
 
