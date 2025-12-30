@@ -48,15 +48,12 @@ A modern web application that empowers users to track their environmental impact
 - Node.js & Express.js
 - MongoDB & Mongoose
 - JWT Authentication
-- Bcrypt for password hashing
-- CORS enabled
 
 **Frontend:**
 - React 19
 - Vite (build tool)
-- React Router for navigation
 - Recharts for data visualization
-- Radix UI for accessible components
+- Radix & Shadcn UI for accessible components
 - Tailwind CSS for styling
 - Framer Motion for animations
 
