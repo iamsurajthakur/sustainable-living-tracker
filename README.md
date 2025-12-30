@@ -140,13 +140,6 @@ Access the dashboard at `/dashboard` and use the "Log Activities" section to rec
 
 The system automatically calculates your carbon footprint based on predefined values.
 
-## 🔒 Authentication
-
-The application uses JWT (JSON Web Tokens) for secure authentication:
-- Access tokens are short-lived (7 days)
-- Refresh tokens enable longer sessions (30 days)
-- Tokens are stored in HTTP-only cookies for security
-
 ## 📊 Dashboard Features
 
 - **Overview**: View your total carbon footprint and environmental statistics
@@ -185,15 +178,6 @@ Please ensure your code passes linting checks and follows the existing code styl
 ## 📝 License
 
 This project is licensed under the ISC License - see the LICENSE file for details.
-
-## 👤 Author
-
-**Suraj Thakur**
-
-## 🙌 Support
-
-For questions, issues, or suggestions, please open an issue on GitHub or contact the maintainer directly.
-
 ---
 
 **Ready to make a difference?** Start tracking your sustainable lifestyle today! 🌍
