@@ -18,6 +18,81 @@ A modern web application that empowers users to track their environmental impact
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **Real-time Notifications**: Get instant feedback on actions with toast notifications
 
+## 🔗 Live Demo
+
+🚀 **Live Application:**  
+👉 https://your-live-demo-link.com
+
+📦 **Backend API:**  
+👉 https://your-backend-api-link.com
+
+> ⚠️ Note: Initial load may take a few seconds as the backend is hosted on a free tier.
+
+## 📸 Screenshots
+
+### Dashboard Overview
+![Dashboard](./screenshots/dashboard.png)
+
+### Log Eco-Friendly Activities
+![Activity Logging](./screenshots/log-activity.png)
+
+### Carbon Footprint Analytics
+![Analytics](./screenshots/analytics.png)
+
+## 🛠️ Tech Stack
+
+**Backend:**
+- Node.js & Express.js
+- MongoDB & Mongoose
+- JWT Authentication
+- Bcrypt for password hashing
+- CORS enabled
+
+**Frontend:**
+- React 19
+- Vite (build tool)
+- React Router for navigation
+- Recharts for data visualization
+- Radix UI for accessible components
+- Tailwind CSS for styling
+- Framer Motion for animations
+
+## 📁 Project Structure
+
+```
+sustainable-living-tracker/
+├── backend/
+│   ├── src/
+│   │   ├── app.js                 # Express app configuration
+│   │   ├── constants.js           # App constants
+│   │   ├── controllers/           # Request handlers
+│   │   ├── db/                    # Database connection
+│   │   ├── middlewares/           # Auth & error handling
+│   │   ├── models/                # Database schemas
+│   │   ├── routes/                # API routes
+│   │   └── utils/                 # Helper functions
+│   ├── index.js                   # Entry point
+│   └── package.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/            # React components
+│   │   │   ├── dashboard/         # Dashboard components
+│   │   │   ├── home/              # Landing page components
+│   │   │   ├── charts/            # Chart components
+│   │   │   ├── secure/            # Auth context & protected routes
+│   │   │   └── ui/                # Reusable UI components
+│   │   ├── pages/                 # Page components
+│   │   ├── api/                   # API client configuration
+│   │   ├── hooks/                 # Custom React hooks
+│   │   ├── lib/                   # Utility functions
+│   │   └── App.jsx
+│   ├── index.html
+│   └── package.json
+│
+└── README.md
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -78,59 +153,7 @@ npm run dev
 ```
 The application will be available at `http://localhost:5173`
 
-## 📁 Project Structure
 
-```
-sustainable-living-tracker/
-├── backend/
-│   ├── src/
-│   │   ├── app.js                 # Express app configuration
-│   │   ├── constants.js           # App constants
-│   │   ├── controllers/           # Request handlers
-│   │   ├── db/                    # Database connection
-│   │   ├── middlewares/           # Auth & error handling
-│   │   ├── models/                # Database schemas
-│   │   ├── routes/                # API routes
-│   │   └── utils/                 # Helper functions
-│   ├── index.js                   # Entry point
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/            # React components
-│   │   │   ├── dashboard/         # Dashboard components
-│   │   │   ├── home/              # Landing page components
-│   │   │   ├── charts/            # Chart components
-│   │   │   ├── secure/            # Auth context & protected routes
-│   │   │   └── ui/                # Reusable UI components
-│   │   ├── pages/                 # Page components
-│   │   ├── api/                   # API client configuration
-│   │   ├── hooks/                 # Custom React hooks
-│   │   ├── lib/                   # Utility functions
-│   │   └── App.jsx
-│   ├── index.html
-│   └── package.json
-│
-└── README.md
-```
-
-## 🛠️ Tech Stack
-
-**Backend:**
-- Node.js & Express.js
-- MongoDB & Mongoose
-- JWT Authentication
-- Bcrypt for password hashing
-- CORS enabled
-
-**Frontend:**
-- React 19
-- Vite (build tool)
-- React Router for navigation
-- Recharts for data visualization
-- Radix UI for accessible components
-- Tailwind CSS for styling
-- Framer Motion for animations
 
 ### Log an Activity
 Access the dashboard at `/dashboard` and use the "Log Activities" section to record:
