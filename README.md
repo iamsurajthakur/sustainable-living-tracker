@@ -132,30 +132,6 @@ sustainable-living-tracker/
 - Tailwind CSS for styling
 - Framer Motion for animations
 
-## 📖 Usage Examples
-
-### Register a New Account
-```bash
-curl -X POST http://localhost:5000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "fullName": "John Doe",
-    "email": "john@example.com",
-    "password": "secure123",
-    "confirmPassword": "secure123"
-  }'
-```
-
-### Login
-```bash
-curl -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "secure123"
-  }'
-```
-
 ### Log an Activity
 Access the dashboard at `/dashboard` and use the "Log Activities" section to record:
 - Distance traveled by car
@@ -179,17 +155,6 @@ The application uses JWT (JSON Web Tokens) for secure authentication:
 - **History**: Detailed view of all logged activities with timestamps
 - **Recent Activity**: Quick summary of your most recent entries
 
-## 🚦 API Endpoints
-
-All endpoints require JWT authentication (except auth endpoints)
-
-**Authentication:**
-- `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/logout` - User logout
-
-Additional endpoints for activities and challenges are documented in the backend routes.
-
 ## 🧹 Code Quality
 
 The project includes ESLint and Prettier for code consistency:
@@ -205,23 +170,6 @@ npm run lint:fix
 npm run format
 ```
 
-## 📦 Building for Production
-
-**Backend:**
-```bash
-cd backend
-npm start
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm run build
-npm run preview
-```
-
-The optimized production build will be in the `frontend/dist` directory.
-
 ## 🤝 Contributing
 
 We welcome contributions! Here's how you can help:
@@ -233,15 +181,6 @@ We welcome contributions! Here's how you can help:
 5. Open a Pull Request
 
 Please ensure your code passes linting checks and follows the existing code style.
-
-## 💡 Future Enhancements
-
-- Real carbon calculation algorithms
-- Community features (leaderboards, social sharing)
-- Advanced analytics and insights
-- Mobile app (React Native)
-- Third-party API integrations
-- Offline mode support
 
 ## 📝 License
 
