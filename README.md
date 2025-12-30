@@ -21,23 +21,26 @@ A modern web application that empowers users to track their environmental impact
 ## 🔗 Live Demo
 
 🚀 **Live Application:**  
-👉 https://your-live-demo-link.com
+👉 https://sustainable-living-tracker.vercel.app
 
 📦 **Backend API:**  
-👉 https://your-backend-api-link.com
+👉 https://sustainable-living-tracker.onrender.com
 
 > ⚠️ Note: Initial load may take a few seconds as the backend is hosted on a free tier.
 
 ## 📸 Screenshots
 
+### Home Overview
+![Dashboard](./screenshots/home.png)
+
 ### Dashboard Overview
-![Dashboard](./screenshots/dashboard.png)
+![Activity Logging](./screenshots/dashboard.png)
 
-### Log Eco-Friendly Activities
-![Activity Logging](./screenshots/log-activity.png)
+### Log Activities
+![Analytics](./screenshots/log.png)
 
-### Carbon Footprint Analytics
-![Analytics](./screenshots/analytics.png)
+### Eco Challenge
+![Analytics](./screenshots/eco-challenge.png)
 
 ## 🛠️ Tech Stack
 
