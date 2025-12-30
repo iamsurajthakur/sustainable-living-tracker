@@ -29,6 +29,7 @@ import { logoutUser } from '@/api/auth.js'
 import { useNavigate } from 'react-router-dom'
 import { useContext } from 'react'
 import { AuthContext } from '../secure/AuthContext'
+import { toast } from 'react-toastify'
 const menuItems = [
   {
     title: 'Dashboard',
@@ -71,6 +72,7 @@ export default function DashboardSidebar({ active, onSelect }) {
       // Remove from localStorage (if you were using it)
       localStorage.removeItem('accessToken')
 
+      toast.success('You have successfully logged out.')
       // Navigate to login
       navigate('/login', { replace: true })
     } catch (error) {
@@ -112,7 +114,7 @@ export default function DashboardSidebar({ active, onSelect }) {
                       tooltip={item.title}
                       onClick={() => handleMenuClick(item.key)}
                       className={`
-          rounded-md transition-all h-10 px-3 w-full
+          rounded-md transition-all cursor-pointer h-10 px-3 w-full
           ${
             isActive
               ? 'bg-green-500/25 text-green-50 ring-1 ring-green-400/40'
@@ -143,7 +145,7 @@ export default function DashboardSidebar({ active, onSelect }) {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className={`hover:bg-green-400/10 data-[state=open]:bg-green-500/20 text-white h-14 w-full ${
+                  className={`hover:bg-green-400/10 cursor-pointer data-[state=open]:bg-green-500/20 text-white h-14 w-full ${
                     isCollapsed ? 'justify-center px-0' : 'px-4'
                   }`}
                 >
@@ -152,7 +154,7 @@ export default function DashboardSidebar({ active, onSelect }) {
                   </div>
                   {!isCollapsed && (
                     <>
-                      <div className="flex flex-col text-left text-sm leading-tight min-w-0 flex-1 ml-3">
+                      <div className="flex flex-col cursor-pointer text-left text-sm leading-tight min-w-0 flex-1 ml-3">
                         <span className="truncate font-semibold text-white">
                           John Doe
                         </span>

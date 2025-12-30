@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { loginUser, registerUser } from '@/api/auth.js'
 import { AuthContext } from '@/components/secure/AuthContext'
+import { Spinner } from '@/components/ui/spinner'
+import { toast } from 'react-toastify'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -13,6 +15,7 @@ const Login = () => {
   const state = searchParams.get('state')
 
   const [isLogin, setIsLogin] = useState(() => state != 'register')
+  const [isLoading, setIsLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -37,15 +40,16 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+    if (isLoading) return
     try {
+      setIsLoading(true)
       let response
       if (isLogin) {
         response = await loginUser({
           email: formData.email,
           password: formData.password,
         })
-
+        toast.success('You have successfully logged in.')
         // Check if accessToken is in response.data.data or response.data
         const token =
           response.data.data?.accessToken || response.data.accessToken
@@ -56,17 +60,22 @@ const Login = () => {
           console.error('No access token found in response')
         }
       } else {
+        setIsLoading(true)
         response = await registerUser({
           fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
         })
+        toast.success('Your account has been created successfully.')
         navigate('/login', { replace: true })
         setIsLogin(true)
       }
     } catch (error) {
+      toast.error(error.message)
       console.error('Auth error: ', error.response?.data || error.message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -278,9 +287,26 @@ const Login = () => {
             <button
               type="button"
               onClick={handleSubmit}
-              className="w-full h-12 cursor-pointer rounded-full text-white bg-green-500 hover:bg-green-600 transition-all duration-200 font-medium hover:shadow-lg hover:shadow-green-500/20"
+              disabled={isLoading}
+              className={`w-full cursor-pointer h-12 rounded-full font-medium transition-all duration-200
+    ${
+      isLoading
+        ? 'bg-green-400 cursor-not-allowed'
+        : 'bg-green-500 hover:bg-green-600 hover:shadow-lg hover:shadow-green-500/20'
+    }
+    text-white
+  `}
             >
-              {isLogin ? 'Login' : 'Create Account'}
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Spinner className="h-4 w-4 text-white" />
+                  {isLogin ? 'Logging in...' : 'Creating account...'}
+                </span>
+              ) : isLogin ? (
+                'Login'
+              ) : (
+                'Create Account'
+              )}
             </button>
 
             {/* Toggle between Login/Register */}
