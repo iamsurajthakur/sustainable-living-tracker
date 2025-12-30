@@ -1,4 +1,4 @@
-# 🌱 Sustainable Living Tracker
+# 🌱 Sustainify
 
 A modern web application that empowers users to track their environmental impact, log eco-friendly activities, and participate in sustainability challenges. Built with React, Node.js, and MongoDB.
 
