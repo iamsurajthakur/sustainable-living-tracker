@@ -13,6 +13,7 @@ import { SidebarProvider } from '@/components/ui/sidebar'
 const Home = lazy(() => import('./pages/Home'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Login = lazy(() => import('./pages/Login'))
+const Contact = lazy(() => import('./pages/Contact'))
 
 function App() {
   const { loading } = useContext(AuthContext)
@@ -48,6 +49,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<div>Page Not Found</div>} />
           </Routes>
         </Suspense>

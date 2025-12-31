@@ -223,17 +223,16 @@ export default function Hero() {
                 Testimonials
               </a>
 
-              <a
+              <Link
                 ref={contactRef}
                 className={`px-6 py-3 font-medium rounded-full transition-all ${
                   activeSection === 'contact' ? 'text-white' : 'text-white/70'
                 }`}
-                href="#contact"
+                to="/contact"
                 onMouseEnter={handleMouseEnter}
-                onClick={(e) => handleLinkClick(e, 'contact')}
               >
                 Contact
-              </a>
+              </Link>
 
               <a
                 ref={faqRef}
