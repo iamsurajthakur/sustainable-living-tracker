@@ -55,7 +55,7 @@ A modern web application that empowers users to track their environmental impact
 - Recharts for data visualization
 - Radix & Shadcn UI for accessible components
 - Tailwind CSS for styling
-- Framer Motion for animations
+- Framer Motion & GSAP for animations
 
 ## 📁 Project Structure
 
