@@ -15,6 +15,10 @@ const actionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  unit: {
+    type: [String],
+    required: true,
+  },
   co2PerUnit: {
     type: Number,
     required: true,
