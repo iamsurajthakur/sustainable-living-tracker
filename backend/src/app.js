@@ -37,9 +37,11 @@ app.get('/', (_, res) => {
 
 //import routes
 import userRouter from './routes/auth.route.js'
+import actionRouter from './routes/action.route.js'
 
 // Routes declaration
 app.use('/api/v1/auth', userRouter)
+app.use('/api/v1/action', actionRouter)
 
 // Global error handler
 app.use(errorHandler)
