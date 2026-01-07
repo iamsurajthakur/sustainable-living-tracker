@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Plus, Edit2, Trash2, Calendar, Activity } from 'lucide-react'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
 import {
@@ -21,9 +21,11 @@ import { Button } from '@/components/ui/button'
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRef } from 'react'
+import { getActionsByCategory } from '@/api/action'
 
 const LogActivities = () => {
   const [activities, setActivities] = useState([''])
+  const [backendActions, setBackendActions] = useState({})
   const inputRef = useRef(null)
 
   const [formData, setFormData] = useState({
@@ -34,6 +36,32 @@ const LogActivities = () => {
     date: new Date().toISOString().split('T')[0],
     note: '',
   })
+
+  //to fetch actions from the backend
+  useEffect(() => {
+    const fetchAllActions = async () => {
+      const categories = ['Transport', 'Energy', 'Water', 'Waste', 'Lifestyle']
+      const actionsData = {}
+
+      await Promise.all(
+        categories.map(async (cat) => {
+          try {
+            const res = await getActionsByCategory(cat.toLowerCase()) // backend expect lowercase
+            if (res.data?.success) {
+              actionsData[cat] = res.data.data
+            } else {
+              actionsData[cat] = []
+            }
+          } catch (error) {
+            console.error(`Failed to fetch actions for ${cat}: `, error)
+            actionsData[cat] = []
+          }
+        })
+      )
+      setBackendActions(actionsData)
+    }
+    fetchAllActions()
+  }, [])
 
   const [editingId, setEditingId] = useState(null)
   const [selectedDate, setSelectedDate] = useState(
@@ -49,50 +77,23 @@ const LogActivities = () => {
     Lifestyle: '🌱',
   }
 
-  const actionsByCategory = {
-    Transport: [
-      'Walked',
-      'Cycled',
-      'Used public transit',
-      'Carpooled',
-      'Electric vehicle',
-    ],
-    Energy: [
-      'Used LED lights',
-      'Solar power',
-      'Turned off devices',
-      'Natural lighting',
-    ],
-    Water: [
-      'Shorter shower',
-      'Reused water',
-      'Rainwater collection',
-      'Fixed leak',
-    ],
-    Waste: ['Recycled', 'Composted', 'Reused items', 'Zero waste shopping'],
-    Lifestyle: [
-      'Plant-based meal',
-      'Local products',
-      'Repaired item',
-      'Donated',
-    ],
-  }
-
-  const unitsByCategory = {
-    Transport: ['km', 'miles'],
-    Energy: ['kWh', 'hours'],
-    Water: ['liters', 'gallons'],
-    Waste: ['grams', 'kg'],
-    Lifestyle: ['items', 'hours', 'meals', 'purchases'],
-  }
-
   const handleInputChange = (field, value) => {
     setFormData((prev) => {
       const updated = { ...prev, [field]: value }
 
       if (field === 'category') {
-        updated.unit = unitsByCategory[value][0]
+        const firstUnit = backendActions[value]?.[0]?.unit?.[0] || 'km' // fallback if empty
+        updated.unit = firstUnit
         updated.action = ''
+      }
+
+      if (field === 'action') {
+        const action = backendActions[prev.category]?.find(
+          (a) => a.actionKey === value
+        )
+        if (action?.unit?.length > 0) {
+          updated.unit = action.unit[0] // default to first unit
+        }
       }
 
       return updated
@@ -221,21 +222,23 @@ const LogActivities = () => {
                   value={formData.category}
                   onValueChange={(value) => {
                     handleInputChange('category', value)
-                    handleInputChange('action', '')
+                    handleInputChange('action', '') // reset action when category changes
                   }}
                 >
                   <SelectTrigger className="w-full cursor-pointer bg-[#0f1712] border border-[#2d3d34] rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <SelectValue placeholder="Select action..." />
+                    <SelectValue placeholder="Select category..." />
                   </SelectTrigger>
 
                   <SelectContent className="bg-[#0a0f0d]">
-                    {Object.keys(categoryIcons).map((cat) => (
+                    {/* Dynamically render categories from backendActions */}
+                    {Object.keys(backendActions).map((cat) => (
                       <SelectItem
                         key={cat}
                         value={cat}
                         className="cursor-pointer hover:bg-[#28322c]"
                       >
-                        {categoryIcons[cat]} {cat}
+                        {/* Optional: keep your icons */}
+                        {categoryIcons[cat] || '📝'} {cat}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -257,13 +260,14 @@ const LogActivities = () => {
                   </SelectTrigger>
 
                   <SelectContent className="bg-[#0a0f0d]">
-                    {actionsByCategory[formData.category]?.map((action) => (
+                    {/* Map over backendActions for the selected category */}
+                    {backendActions[formData.category]?.map((action) => (
                       <SelectItem
-                        key={action}
-                        value={action}
+                        key={action.actionKey}
+                        value={action.actionKey} // use actionKey as value
                         className="cursor-pointer hover:bg-[#28322c]"
                       >
-                        {action}
+                        {action.label} {/* display the label */}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -298,18 +302,21 @@ const LogActivities = () => {
                   onValueChange={(value) => handleInputChange('unit', value)}
                 >
                   <SelectTrigger className="w-full bg-[#0f1712] border border-[#2d3d34] rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <SelectValue placeholder="unit" />
+                    <SelectValue placeholder="Select unit" />
                   </SelectTrigger>
+
                   <SelectContent className="bg-[#0a0f0d]">
-                    {unitsByCategory[formData.category].map((unit) => (
-                      <SelectItem
-                        key={unit}
-                        value={unit}
-                        className="cursor-pointer hover:bg-[#28322c]"
-                      >
-                        {unit}
-                      </SelectItem>
-                    ))}
+                    {backendActions[formData.category]
+                      ?.find((action) => action.actionKey === formData.action)
+                      ?.unit.map((unit) => (
+                        <SelectItem
+                          key={unit}
+                          value={unit}
+                          className="cursor-pointer hover:bg-[#28322c]"
+                        >
+                          {unit}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
