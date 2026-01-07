@@ -13,6 +13,7 @@ const getActions = asyncHandler(async (req, res) => {
   category = category.toLowerCase()
 
   let actions = []
+  // try catch block for production error
   try {
     actions = await Action.find(
       { category },
