@@ -3,6 +3,7 @@ import apiResponse from '../utils/apiResponse.js'
 import ApiError from '../utils/apiError.js'
 import { Action } from '../models/action.model.js'
 import { userAction } from '../models/userAction.model.js'
+import { Log } from '../models/log.model.js'
 
 const getActions = asyncHandler(async (req, res) => {
   let category = req.query.category
@@ -109,7 +110,68 @@ const addActions = asyncHandler(async (req, res) => {
 
 })
 
+const addUserLog = asyncHandler(async (req, res) => {
+  const { userId , actionKey, quantity, unit, activityDate, note } = req.body
+
+  if(!userId || !actionKey || !quantity || !unit || !activityDate || !note){
+    throw new ApiError(400, 'Missing required feilds.')
+  }
+
+  const actionDef = await userAction.findOne({ actionKey })
+
+  if(!actionDef) throw new ApiError(400, 'Action not found')
+
+  let co2 = 0
+  if (unit === actionDef.baseUnit) {
+    co2 = quantity * actionDef.co2PerBaseUnit
+  } else {
+    const conversion = actionDef.supportedUnits.find(u => u.unit === unit)
+    if (!conversion) throw new ApiError(400, 'Unsupported unit')
+    co2 = quantity * conversion.toBaseFactor * actionDef.co2PerBaseUnit
+  }
+
+  const log = await Log.create({
+    userId,
+    category: actionDef.category,
+    actionKey,
+    quantity,
+    unit,
+    activityDate,
+    note,
+    co2
+  })
+
+  res.status(201).json(new apiResponse(201, log, 'Activity logged successfully'))
+
+})
+
+const getUserLogs = asyncHandler(async (req, res) => {
+  const { userId, startDate, endDate, category } = req.query
+
+  if(!userId){
+    throw new ApiError(400, 'userId is required')
+  }
+
+  const filter = { userId }
+
+  if(category){
+    filter.category = category.toLowerCase()
+  }
+
+  if(startDate || endDate){
+    filter.activityDate = {}
+    if (startDate) filter.activityDate.$gte = new Date(startDate)
+    if (endDate) filter.activityDate.$lte = new Date(endDate)
+  }
+
+  const logs = await Log.find(filter).sort({ activityDate: -1, createdAt: -1 })
+
+  res.status(200).json(new apiResponse(200, logs, 'User log fetched successfully'))
+})
+
 export {
   getActions,
-  addActions
+  addActions,
+  addUserLog,
+  getUserLogs
 }

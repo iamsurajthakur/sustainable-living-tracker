@@ -35,6 +35,10 @@ const logSchema = new mongoose.Schema({
     type: String,
     trim: true,
     maxLength: 300
+  },
+  co2: {
+    type: Number,
+    required: true,
   }
 }, { timestamps: true })
 
