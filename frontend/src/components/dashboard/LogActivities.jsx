@@ -4,9 +4,7 @@ import { AnimatePresence, motion as Motion } from 'framer-motion'
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -27,12 +25,13 @@ const LogActivities = () => {
   const [activities, setActivities] = useState([''])
   const [backendActions, setBackendActions] = useState({})
   const inputRef = useRef(null)
+  const actionLabelMap = {}
 
   const [formData, setFormData] = useState({
-    category: 'Transport',
+    category: '',
     action: '',
     quantity: '',
-    unit: 'km',
+    unit: '',
     date: new Date().toISOString().split('T')[0],
     note: '',
   })
@@ -141,6 +140,12 @@ const LogActivities = () => {
     setTimeout(() => setShowSuccess(false), 3000)
   }
 
+  Object.values(backendActions)
+    .flat()
+    .forEach((action) => {
+      actionLabelMap[action.actionKey] = action.label
+    })
+
   const handleEdit = (activity) => {
     setFormData({
       category: activity.category,
@@ -160,7 +165,7 @@ const LogActivities = () => {
 
   const todaysActivities = activities.filter((a) => a.date === selectedDate)
   const co2Saved = (todaysActivities.length * 2.5).toFixed(1)
-  const streak = 7
+  const streak = 0
 
   return (
     <div className="min-h-screen bg-[#0a0f0d] text-gray-100 p-6">
@@ -206,6 +211,7 @@ const LogActivities = () => {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 mb-8"
         >
+          {/* Heading */}
           <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
             <Activity className="w-5 h-5 text-emerald-500" />
             {editingId ? 'Edit Activity' : 'Quick Log Form'}
@@ -421,6 +427,7 @@ const LogActivities = () => {
               </div>
             </div>
 
+            {/* Button */}
             <div className="flex gap-3">
               <button
                 onClick={handleSubmit}
@@ -498,7 +505,8 @@ const LogActivities = () => {
                               </span>
                               <span className="text-gray-600">|</span>
                               <span className="text-white font-medium">
-                                {activity.action}
+                                {actionLabelMap[activity.action] ??
+                                  activity.action}
                               </span>
                             </div>
                             <div className="flex items-center gap-3 text-sm text-gray-400">
