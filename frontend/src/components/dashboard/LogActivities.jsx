@@ -19,11 +19,11 @@ import { Button } from '@/components/ui/button'
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRef } from 'react'
-import { getActionsByCategory, postUserLog } from '@/api/action'
+import { getActionsByCategory, postUserLog, getUserLogs } from '@/api/action'
 import { toast } from 'react-toastify'
 
 const LogActivities = () => {
-  const [activities, setActivities] = useState([''])
+  const [todaysActivities, setTodaysActivities] = useState([])
   const [backendActions, setBackendActions] = useState({})
   const inputRef = useRef(null)
   const actionLabelMap = {}
@@ -62,6 +62,52 @@ const LogActivities = () => {
     }
     fetchAllActions()
   }, [])
+
+  //to fetch user activity logs from the backend
+  useEffect(() => {
+    const fetchLogs = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.data.user._id
+
+      if (!userId) return
+
+      try {
+        const res = await getUserLogs({ userId })
+        if (res.data?.success) {
+          const mappedLogs = res.data.data.map((log) => {
+            const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
+            const categoryName = capitalize(log.category)
+
+            // Find the action object in backendActions to get the label
+            const actionObj = backendActions[categoryName]?.find(
+              (a) => a.actionKey === log.actionKey
+            )
+            const label = actionObj?.label || log.actionKey
+
+            return {
+              id: log._id,
+              category: log.category,
+              action: log.actionKey,
+              quantity: log.quantity,
+              unit: log.unit,
+              note: log.note,
+              time: new Date(log.activityDate).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              label, // <-- attach label here
+            }
+          })
+          setTodaysActivities(mappedLogs)
+        }
+      } catch (error) {
+        toast.error('Failed to fetch user logs: ', error)
+      }
+    }
+
+    // Only fetch logs after backendActions are loaded
+    if (Object.keys(backendActions).length > 0) fetchLogs()
+  }, [backendActions])
 
   const [editingId, setEditingId] = useState(null)
   const [selectedDate, setSelectedDate] = useState(
@@ -128,22 +174,35 @@ const LogActivities = () => {
 
       const savedActivity = response.data.data
 
+      const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
+      const actionCategory = capitalize(savedActivity.category)
+
+      const actionObj = backendActions[actionCategory]?.find(
+        (a) => a.actionKey === savedActivity.actionKey
+      )
+
+      const label = actionObj?.label || savedActivity.actionKey
+
       if (editingId) {
-        setActivities((prev) =>
+        setTodaysActivities((prev) =>
           prev.map((activity) =>
             activity.id === editingId
-              ? { ...savedActivity, id: editingId, time: activity.time }
+              ? { ...savedActivity, id: editingId, time: activity.time, label }
               : activity
           )
         )
         setEditingId(null)
       } else {
-        setActivities((prev) => [
-          { ...savedActivity, id: Date.now(), time: currentTime },
+        setTodaysActivities((prev) => [
+          {
+            ...savedActivity,
+            id: Date.now(),
+            time: currentTime,
+            label,
+          },
           ...prev,
         ])
       }
-
       setFormData({
         category: 'Transport',
         action: '',
@@ -164,7 +223,6 @@ const LogActivities = () => {
       )
     }
   }
-
   Object.values(backendActions)
     .flat()
     .forEach((action) => {
@@ -185,11 +243,10 @@ const LogActivities = () => {
   }
 
   const handleDelete = (id) => {
-    setActivities((prev) => prev.filter((activity) => activity.id !== id))
+    setTodaysActivities((prev) => prev.filter((activity) => activity.id !== id))
   }
 
-  const todaysActivities = activities.filter((a) => a.date === selectedDate)
-  const co2Saved = (todaysActivities.length * 2.5).toFixed(1)
+  const co2Saved = 0
   const streak = 0
 
   return (
@@ -211,6 +268,7 @@ const LogActivities = () => {
             }}
           >
             <div className="relative">
+              {/* Date */}
               <Input
                 ref={inputRef}
                 type="date"
@@ -520,9 +578,6 @@ const LogActivities = () => {
                         className="bg-[#0f1712] border border-[#2d3d34] rounded-lg p-4 flex items-center justify-between hover:border-emerald-700/50 transition-colors"
                       >
                         <div className="flex items-center gap-4 flex-1">
-                          <span className="text-2xl">
-                            {categoryIcons[activity.category]}
-                          </span>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm font-medium text-emerald-400">
@@ -530,8 +585,7 @@ const LogActivities = () => {
                               </span>
                               <span className="text-gray-600">|</span>
                               <span className="text-white font-medium">
-                                {actionLabelMap[activity.action] ??
-                                  activity.action}
+                                {activity.label}
                               </span>
                             </div>
                             <div className="flex items-center gap-3 text-sm text-gray-400">
