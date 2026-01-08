@@ -91,6 +91,7 @@ const LogActivities = () => {
               quantity: log.quantity,
               unit: log.unit,
               note: log.note,
+              co2: log.co2,
               time: new Date(log.activityDate).toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -246,7 +247,10 @@ const LogActivities = () => {
     setTodaysActivities((prev) => prev.filter((activity) => activity.id !== id))
   }
 
-  const co2Saved = 0
+  const co2Saved = todaysActivities.reduce(
+    (total, activity) => total + (activity.co2 || 0),
+    0
+  )
   const streak = 0
 
   return (
