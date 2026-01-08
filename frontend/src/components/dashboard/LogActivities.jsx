@@ -19,7 +19,8 @@ import { Button } from '@/components/ui/button'
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRef } from 'react'
-import { getActionsByCategory } from '@/api/action'
+import { getActionsByCategory, postUserLog } from '@/api/action'
+import { toast } from 'react-toastify'
 
 const LogActivities = () => {
   const [activities, setActivities] = useState([''])
@@ -99,7 +100,7 @@ const LogActivities = () => {
     })
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.action || !formData.quantity) {
       return
     }
@@ -109,35 +110,59 @@ const LogActivities = () => {
       minute: '2-digit',
     })
 
-    if (editingId) {
-      setActivities((prev) =>
-        prev.map((activity) =>
-          activity.id === editingId
-            ? { ...formData, id: editingId, time: activity.time }
-            : activity
-        )
-      )
-      setEditingId(null)
-    } else {
-      const newActivity = {
-        ...formData,
-        id: Date.now(),
-        time: currentTime,
+    try {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const currentUserId = userData.data.user._id
+      if (!currentUserId) {
+        toast.error('User not logged in')
+        return
       }
-      setActivities((prev) => [newActivity, ...prev])
+      const response = await postUserLog({
+        userId: currentUserId,
+        actionKey: formData.action,
+        quantity: Number(formData.quantity),
+        unit: formData.unit,
+        activityDate: formData.date,
+        note: formData.note,
+      })
+
+      const savedActivity = response.data.data
+
+      if (editingId) {
+        setActivities((prev) =>
+          prev.map((activity) =>
+            activity.id === editingId
+              ? { ...savedActivity, id: editingId, time: activity.time }
+              : activity
+          )
+        )
+        setEditingId(null)
+      } else {
+        setActivities((prev) => [
+          { ...savedActivity, id: Date.now(), time: currentTime },
+          ...prev,
+        ])
+      }
+
+      setFormData({
+        category: 'Transport',
+        action: '',
+        quantity: '',
+        unit: 'km',
+        date: new Date().toISOString().split('T')[0],
+        note: '',
+      })
+
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
+    } catch (error) {
+      console.error('Failed to log activity:', error)
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          'Error logging activity'
+      )
     }
-
-    setFormData({
-      category: 'Transport',
-      action: '',
-      quantity: '',
-      unit: 'km',
-      date: new Date().toISOString().split('T')[0],
-      note: '',
-    })
-
-    setShowSuccess(true)
-    setTimeout(() => setShowSuccess(false), 3000)
   }
 
   Object.values(backendActions)

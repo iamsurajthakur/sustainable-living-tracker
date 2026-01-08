@@ -113,11 +113,11 @@ const addActions = asyncHandler(async (req, res) => {
 const addUserLog = asyncHandler(async (req, res) => {
   const { userId , actionKey, quantity, unit, activityDate, note } = req.body
 
-  if(!userId || !actionKey || !quantity || !unit || !activityDate || !note){
+  if(!userId || !actionKey || !quantity || !unit || !activityDate){
     throw new ApiError(400, 'Missing required feilds.')
   }
 
-  const actionDef = await userAction.findOne({ actionKey })
+  const actionDef = await userAction.findOne({ actionKey: actionKey.toLowerCase() })
 
   if(!actionDef) throw new ApiError(400, 'Action not found')
 

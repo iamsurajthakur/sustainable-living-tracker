@@ -5,3 +5,7 @@ export const getActionsByCategory = async (category) => {
     params: { category },
   })
 }
+
+export const postUserLog = async (data) => {
+  return await api.post('/api/v1/action/addUserLog', data)
+}

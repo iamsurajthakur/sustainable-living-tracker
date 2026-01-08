@@ -117,6 +117,11 @@ const Login = () => {
           password: formData.password,
         })
         toast.success('You have successfully logged in.')
+
+        //set user in local storage
+        const userData = response.data.data
+        localStorage.setItem('user', JSON.stringify(userData))
+
         const token =
           response.data.data?.accessToken || response.data.accessToken
 
