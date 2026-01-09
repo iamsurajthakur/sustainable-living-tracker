@@ -20,3 +20,9 @@ export const getUserLogs = async ({
     params: { userId, startDate, endDate, category },
   })
 }
+
+export const getUserCo2 = async (userId) => {
+  return await api.get('/api/v1/action/getTotalCo2', {
+    params: { userId },
+  })
+}

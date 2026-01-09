@@ -19,12 +19,18 @@ import { Button } from '@/components/ui/button'
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRef } from 'react'
-import { getActionsByCategory, postUserLog, getUserLogs } from '@/api/action'
+import {
+  getActionsByCategory,
+  postUserLog,
+  getUserLogs,
+  getUserCo2,
+} from '@/api/action'
 import { toast } from 'react-toastify'
 
 const LogActivities = () => {
   const [todaysActivities, setTodaysActivities] = useState([])
   const [backendActions, setBackendActions] = useState({})
+  const [co2Saved, setCo2Saved] = useState(0)
   const inputRef = useRef(null)
   const actionLabelMap = {}
 
@@ -109,6 +115,18 @@ const LogActivities = () => {
     if (Object.keys(backendActions).length > 0) fetchLogs()
   }, [backendActions])
 
+  //to fetch the total co2 from the user logs collection
+  useEffect(() => {
+    const fetchCO2 = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const res = await getUserCo2(userId)
+      setCo2Saved(res.data.data.totalCO2.toFixed(2))
+    }
+    fetchCO2()
+  }, [])
+
   const [editingId, setEditingId] = useState(null)
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
@@ -173,6 +191,11 @@ const LogActivities = () => {
       })
 
       const savedActivity = response.data.data
+
+      setCo2Saved((prev) => {
+        const prevValue = Number(prev) || 0
+        return (prevValue + savedActivity.co2).toFixed(2)
+      })
 
       const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
       const actionCategory = capitalize(savedActivity.category)
@@ -245,11 +268,6 @@ const LogActivities = () => {
   const handleDelete = (id) => {
     setTodaysActivities((prev) => prev.filter((activity) => activity.id !== id))
   }
-
-  const co2Saved = todaysActivities.reduce(
-    (total, activity) => total + (activity.co2 || 0),
-    0
-  )
   const streak = 0
 
   return (
