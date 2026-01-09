@@ -66,23 +66,39 @@ const LogActivities = () => {
   //to fetch user activity logs from the backend
   useEffect(() => {
     const fetchLogs = async () => {
-      const userData = JSON.parse(localStorage.getItem('user'))
-      const userId = userData.data.user._id
+      const storedUser = localStorage.getItem('user')
 
-      if (!userId) return
+      if (!storedUser) {
+        console.warn('User not found in localStorage yet')
+        return
+      }
+
+      let userData
+      try {
+        userData = JSON.parse(storedUser)
+      } catch (err) {
+        console.error('Invalid user JSON in localStorage', err)
+        return
+      }
+
+      const userId = userData?.data?.user?._id
+
+      if (!userId) {
+        console.warn('User ID not available yet')
+        return
+      }
 
       try {
         const res = await getUserLogs({ userId })
+
         if (res.data?.success) {
           const mappedLogs = res.data.data.map((log) => {
             const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
             const categoryName = capitalize(log.category)
 
-            // Find the action object in backendActions to get the label
             const actionObj = backendActions[categoryName]?.find(
               (a) => a.actionKey === log.actionKey
             )
-            const label = actionObj?.label || log.actionKey
 
             return {
               id: log._id,
@@ -96,18 +112,21 @@ const LogActivities = () => {
                 hour: '2-digit',
                 minute: '2-digit',
               }),
-              label, // <-- attach label here
+              label: actionObj?.label || log.actionKey,
             }
           })
+
           setTodaysActivities(mappedLogs)
         }
       } catch (error) {
-        toast.error('Failed to fetch user logs: ', error)
+        console.error('Failed to fetch user logs', error)
+        toast.error('Failed to fetch user logs')
       }
     }
 
-    // Only fetch logs after backendActions are loaded
-    if (Object.keys(backendActions).length > 0) fetchLogs()
+    if (Object.keys(backendActions).length > 0) {
+      fetchLogs()
+    }
   }, [backendActions])
 
   const [editingId, setEditingId] = useState(null)
