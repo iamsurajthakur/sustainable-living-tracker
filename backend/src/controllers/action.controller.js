@@ -200,10 +200,72 @@ const getTotalCo2 = asyncHandler(async (req, res) => {
   )
 })
 
+const updateUserLog = asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const { quantity, unit, note, actionKey, activityDate, category } = req.body
+
+  if(!id) throw new ApiError(400,'Id is missing')
+
+  const updatedLog = await Log.findByIdAndUpdate(
+    id,
+    {
+      quantity,
+      unit,
+      note,
+      actionKey,
+      activityDate,
+      category,
+    },
+    { new: true }
+  )
+
+  if(!updatedLog){
+    throw new ApiError(404,'Log not found')
+  }
+
+
+  const actionData = await userAction.findOne({ actionKey: actionKey.toLowerCase(), category: category.toLowerCase() })
+  let quantityInBaseUnit = quantity
+
+  if (unit !== actionData.baseUnit) {
+    const unitConfig = actionData.supportedUnits.find(
+      (u) => u.unit === unit
+    )
+
+    if (!unitConfig) {
+      throw new ApiError(400, 'Unsupported unit for this action')
+    }
+
+    quantityInBaseUnit = quantity * unitConfig.toBaseFactor
+  }
+
+  updatedLog.co2 = quantityInBaseUnit * actionData.co2PerBaseUnit + (actionData.baseline || 0)
+
+  await updatedLog.save()
+
+  res.status(200).json(new apiResponse(200, updatedLog, 'Activity updated successfully'))
+})
+
+const deleteUserLog = asyncHandler(async (req, res) => {
+
+  const { id } = req.params
+
+  if(!id) throw new ApiError(400,'Id is missing')
+
+  const deletedLog = await Log.findByIdAndDelete(id)
+
+  if(!deletedLog) throw new ApiError(404, 'Log not found')
+
+  res.status(200).json(new apiResponse(200, deletedLog, 'Log deleted successfully'))
+
+})
+
 export {
   getActions,
   addActions,
   addUserLog,
   getUserLogs,
   getTotalCo2,
+  updateUserLog,
+  deleteUserLog,
 }
