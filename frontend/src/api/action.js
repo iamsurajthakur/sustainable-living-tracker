@@ -26,3 +26,11 @@ export const getUserCo2 = async (userId) => {
     params: { userId },
   })
 }
+
+export const updateUserLog = async (id, data) => {
+  return await api.put(`/api/v1/action/updateUserLog/${id}`, data)
+}
+
+export const deleteUserLog = async (id) => {
+  return await api.delete(`/api/v1/action/deleteUserLog/${id}`)
+}
