@@ -25,6 +25,8 @@ import {
   postUserLog,
   getUserLogs,
   getUserCo2,
+  updateUserLog,
+  deleteUserLog,
 } from '@/api/action'
 import { toast } from 'react-toastify'
 
@@ -183,21 +185,38 @@ const LogActivities = () => {
         toast.error('User not logged in')
         return
       }
-      const response = await postUserLog({
-        userId: currentUserId,
-        actionKey: formData.action,
-        quantity: Number(formData.quantity),
-        unit: formData.unit,
-        activityDate: formData.date,
-        note: formData.note,
-      })
+
+      let response
+
+      // Check if we're editing or creating new
+      if (editingId) {
+        // UPDATE existing activity
+        response = await updateUserLog(editingId, {
+          category: formData.category.toLowerCase(),
+          actionKey: formData.action,
+          quantity: Number(formData.quantity),
+          unit: formData.unit,
+          activityDate: formData.date,
+          note: formData.note,
+        })
+      } else {
+        // CREATE new activity
+        response = await postUserLog({
+          userId: currentUserId,
+          category: formData.category.toLowerCase(),
+          actionKey: formData.action,
+          quantity: Number(formData.quantity),
+          unit: formData.unit,
+          activityDate: formData.date,
+          note: formData.note,
+        })
+      }
 
       const savedActivity = response.data.data
 
-      setCo2Saved((prev) => {
-        const prevValue = Number(prev) || 0
-        return (prevValue + savedActivity.co2).toFixed(2)
-      })
+      // Recalculate CO2 from backend
+      const co2Response = await getUserCo2(currentUserId)
+      setCo2Saved(co2Response.data.data.totalCO2.toFixed(2))
 
       const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
       const actionCategory = capitalize(savedActivity.category)
@@ -221,7 +240,7 @@ const LogActivities = () => {
         setTodaysActivities((prev) => [
           {
             ...savedActivity,
-            id: Date.now(),
+            id: savedActivity._id,
             time: currentTime,
             label,
           },
@@ -239,6 +258,11 @@ const LogActivities = () => {
 
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
+      toast.success(
+        editingId
+          ? 'Activity updated successfully!'
+          : 'Activity logged successfully!'
+      )
     } catch (error) {
       console.error('Failed to log activity:', error)
       toast.error(
@@ -250,6 +274,7 @@ const LogActivities = () => {
       setIsSubmitting(false)
     }
   }
+
   Object.values(backendActions)
     .flat()
     .forEach((action) => {
@@ -257,20 +282,42 @@ const LogActivities = () => {
     })
 
   const handleEdit = (activity) => {
+    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
+    const categoryName = capitalize(activity.category)
+
     setFormData({
-      category: activity.category,
+      category: categoryName,
       action: activity.action,
       quantity: activity.quantity,
       unit: activity.unit,
-      date: activity.date,
-      note: activity.note,
+      date: activity.date || new Date().toISOString().split('T')[0],
+      note: activity.note || '',
     })
     setEditingId(activity.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDelete = (id) => {
-    setTodaysActivities((prev) => prev.filter((activity) => activity.id !== id))
+  const handleDelete = async (id) => {
+    try {
+      // Call backend API to delete
+      await deleteUserLog(id)
+
+      // Update UI
+      setTodaysActivities((prev) =>
+        prev.filter((activity) => activity.id !== id)
+      )
+
+      // Recalculate CO2 from backend
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const currentUserId = userData.user._id
+      const co2Response = await getUserCo2(currentUserId)
+      setCo2Saved(co2Response.data.data.totalCO2.toFixed(2))
+
+      toast.success('Activity deleted successfully!')
+    } catch (error) {
+      console.error('Failed to delete activity:', error)
+      toast.error(error.response?.data?.message || 'Error deleting activity')
+    }
   }
   const streak = 0
 
