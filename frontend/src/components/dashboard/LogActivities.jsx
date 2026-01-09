@@ -158,7 +158,7 @@ const LogActivities = () => {
 
     try {
       const userData = JSON.parse(localStorage.getItem('user'))
-      const currentUserId = userData.data.user._id
+      const currentUserId = userData.user._id
       if (!currentUserId) {
         toast.error('User not logged in')
         return
