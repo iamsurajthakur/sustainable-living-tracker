@@ -63,7 +63,7 @@ const LogActivities = () => {
     fetchAllActions()
   }, [])
 
-  //to fetch user activity logs from the backend
+  //to fetch user activity logs from the backend logs collection
   useEffect(() => {
     const fetchLogs = async () => {
       const userData = JSON.parse(localStorage.getItem('user'))
