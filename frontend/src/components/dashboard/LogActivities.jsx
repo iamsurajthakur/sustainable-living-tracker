@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRef } from 'react'
@@ -33,6 +34,7 @@ const LogActivities = () => {
   const [co2Saved, setCo2Saved] = useState(0)
   const inputRef = useRef(null)
   const actionLabelMap = {}
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
     category: '',
@@ -168,7 +170,7 @@ const LogActivities = () => {
     if (!formData.action || !formData.quantity) {
       return
     }
-
+    setIsSubmitting(true)
     const currentTime = new Date().toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
@@ -244,6 +246,8 @@ const LogActivities = () => {
           error.message ||
           'Error logging activity'
       )
+    } finally {
+      setIsSubmitting(false)
     }
   }
   Object.values(backendActions)
@@ -536,10 +540,20 @@ const LogActivities = () => {
               <button
                 onClick={handleSubmit}
                 disabled={!formData.action || !formData.quantity}
-                className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                className="bg-emerald-600 cursor-pointer hover:bg-emerald-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors"
               >
-                <Plus className="w-4 h-4" />
-                {editingId ? 'Update Activity' : 'Add Activity'}
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Spinner className="h-4 w-4 text-white" />
+                    {editingId ? 'Updating Activity...' : 'Adding Activity...'}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    {editingId ? 'Update Activity' : 'Add Activity'}
+                  </span>
+                )}
+                {/* {editingId ? 'Update Activity' : 'Add Activity'} */}
               </button>
               {editingId && (
                 <button
@@ -629,14 +643,14 @@ const LogActivities = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEdit(activity)}
-                            className="p-2 text-gray-400 hover:text-emerald-400 hover:bg-[#1a2820] rounded-lg transition-colors"
+                            className="p-2 text-gray-400 cursor-pointer hover:text-emerald-400 hover:bg-[#1a2820] rounded-lg transition-colors"
                             title="Edit"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(activity.id)}
-                            className="p-2 text-gray-400 hover:text-red-400 hover:bg-[#1a2820] rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-red-400 cursor-pointer hover:bg-[#1a2820] rounded-lg transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
