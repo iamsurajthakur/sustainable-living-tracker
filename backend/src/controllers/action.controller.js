@@ -4,6 +4,7 @@ import ApiError from '../utils/apiError.js'
 import { Action } from '../models/action.model.js'
 import { userAction } from '../models/userAction.model.js'
 import { Log } from '../models/log.model.js'
+import mongoose from 'mongoose'
 
 const getActions = asyncHandler(async (req, res) => {
   let category = req.query.category
@@ -169,9 +170,40 @@ const getUserLogs = asyncHandler(async (req, res) => {
   res.status(200).json(new apiResponse(200, logs, 'User log fetched successfully'))
 })
 
+const getTotalCo2 = asyncHandler(async (req, res) => {
+  const { userId } = req.query
+
+  if(!userId) {
+    throw new ApiError(400, 'userId is missing')
+  }
+
+  const result = await Log.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalCO2: { $sum: '$co2' }
+      },
+    },
+  ])
+
+  res.status(200).json(
+    new apiResponse(
+      200,
+      { totalCO2: result[0]?.totalCO2 || 0 },
+      'Total CO2 calculated'
+    )
+  )
+})
+
 export {
   getActions,
   addActions,
   addUserLog,
-  getUserLogs
+  getUserLogs,
+  getTotalCo2,
 }
