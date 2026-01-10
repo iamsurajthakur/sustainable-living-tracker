@@ -61,6 +61,9 @@ const menuItems = [
 export default function DashboardSidebar({ active, onSelect }) {
   const navigate = useNavigate()
   const { setAccessToken } = useContext(AuthContext)
+  const userData = JSON.parse(localStorage.getItem('user'))
+  const email = userData.user.email
+  const fullName = userData.user.fullName
 
   const handleLogout = async () => {
     try {
@@ -156,10 +159,10 @@ export default function DashboardSidebar({ active, onSelect }) {
                     <>
                       <div className="flex flex-col cursor-pointer text-left text-sm leading-tight min-w-0 flex-1 ml-3">
                         <span className="truncate font-semibold text-white">
-                          John Doe
+                          {fullName}
                         </span>
                         <span className="truncate text-xs text-gray-400">
-                          john@example.com
+                          {email}
                         </span>
                       </div>
                       <ChevronUp className="size-4 text-gray-400 flex-shrink-0" />
