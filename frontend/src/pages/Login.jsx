@@ -69,8 +69,7 @@ const Login = () => {
     return null // or return <LoadingAnimation />
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (isLoading) return
 
     // Validate email before submission
@@ -214,6 +213,12 @@ const Login = () => {
     }
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+      handleSubmit()
+    }
+  }
+
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* Left side - Artistic Image */}
@@ -285,6 +290,7 @@ const Login = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
                   placeholder="Full name"
                   className="bg-transparent border-gray-700 text-gray-300 placeholder-gray-500 h-12 rounded-full pl-14 pr-6 focus-visible:border-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors"
                   required
@@ -315,6 +321,7 @@ const Login = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
                   placeholder="Email id"
                   className={`bg-transparent border-gray-700 text-gray-300 placeholder-gray-500 h-12 rounded-full pl-14 pr-6 focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors ${
                     emailError
@@ -360,6 +367,7 @@ const Login = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
                   placeholder="Password"
                   className={`bg-transparent border-gray-700 text-gray-300 placeholder-gray-500 h-12 rounded-full pl-14 pr-6 focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors ${
                     passwordError
@@ -404,6 +412,7 @@ const Login = () => {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Confirm password"
                     className={`bg-transparent border-gray-700 text-gray-300 placeholder-gray-500 h-12 rounded-full pl-14 pr-6 focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors ${
                       confirmPasswordError
