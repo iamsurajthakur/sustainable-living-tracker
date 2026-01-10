@@ -18,6 +18,15 @@ const Dashboard = () => {
     () => localStorage.getItem('dashboard-tab') || 'overview'
   )
 
+  const userData = JSON.parse(localStorage.getItem('user'))
+
+  function getFirstName(fullName) {
+    if (!fullName || typeof fullName !== 'string') return ''
+    return fullName.trim().split(/\s+/)[0]
+  }
+
+  const firstName = getFirstName(userData.user.fullName)
+
   useEffect(() => {
     localStorage.setItem('dashboard-tab', active)
   }, [active])
@@ -48,7 +57,9 @@ const Dashboard = () => {
             <SidebarTrigger className="text-gray-400 hover:text-green-400 -ml-2" />
             <div className="flex items-center gap-2 text-green-400">
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <h1 className="text-base font-medium">Welcome back, John</h1>
+              <h1 className="text-base font-medium">
+                Welcome back, {firstName}
+              </h1>
             </div>
           </div>
 
@@ -59,7 +70,7 @@ const Dashboard = () => {
                 <span className="text-xs font-semibold text-green-400">
                   Sustainify
                 </span>
-                <span className="text-[10px] text-gray-400">Admin</span>
+                <span className="text-[10px] text-gray-400">{firstName}</span>
               </div>
             </div>
           </div>
