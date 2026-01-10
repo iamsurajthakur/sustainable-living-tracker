@@ -135,7 +135,6 @@ const LogActivities = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
   )
-  const [showSuccess, setShowSuccess] = useState(false)
 
   const categoryIcons = {
     Transport: '🚶',
@@ -351,13 +350,6 @@ const LogActivities = () => {
             </div>
           </div>
         </div>
-
-        {/* Success Message */}
-        {showSuccess && (
-          <div className="mb-6 bg-emerald-950/50 border border-emerald-700 rounded-lg p-4 text-emerald-300">
-            ✓ Activity {editingId ? 'updated' : 'logged'} successfully!
-          </div>
-        )}
 
         {/* Quick Log Form */}
         <Motion.div
@@ -644,7 +636,7 @@ const LogActivities = () => {
                 </div>
               ) : (
                 <div
-                  className="space-y-3 overflow-y-auto max-h-[300px] pr-2 
+                  className="space-y-3 overflow-y-auto h-[300px] pr-2 
              [mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]
              [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
                 >
