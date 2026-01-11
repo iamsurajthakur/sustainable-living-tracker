@@ -37,6 +37,7 @@ const LogActivities = () => {
   const inputRef = useRef(null)
   const actionLabelMap = {}
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [, setShowSuccess] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -299,6 +300,7 @@ const LogActivities = () => {
 
   const handleDelete = async (id) => {
     try {
+      setIsDeleting(id)
       // Call backend API to delete
       await deleteUserLog(id)
 
@@ -690,10 +692,15 @@ const LogActivities = () => {
                           </button>
                           <button
                             onClick={() => handleDelete(activity.id)}
-                            className="p-2 text-gray-400 hover:text-red-400 cursor-pointer hover:bg-[#1a2820] rounded-lg transition-colors"
+                            disabled={isDeleting === activity.id}
+                            className="p-2 text-gray-400 hover:text-red-400 cursor-pointer hover:bg-[#1a2820] rounded-lg transition-colors disabled:cursor-not-allowed"
                             title="Delete"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {isDeleting === activity.id ? (
+                              <Spinner className="w-4 h-4 text-red-400" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </Motion.div>
