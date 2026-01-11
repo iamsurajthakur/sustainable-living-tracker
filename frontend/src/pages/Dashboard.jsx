@@ -51,7 +51,7 @@ const Dashboard = () => {
       <Sidebar active={active} onSelect={setActive} />
 
       <SidebarInset>
-        {/* Fixed Header */}
+        {/* Fixed Header and made responsive*/}
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-green-500/20 bg-[#0A0F0C] px-6 backdrop-blur-sm">
           <div className="flex items-center gap-4">
             <SidebarTrigger className="text-gray-400 hover:text-green-400 -ml-2" />
