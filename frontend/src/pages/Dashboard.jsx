@@ -55,22 +55,53 @@ const Dashboard = () => {
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-green-500/20 bg-[#0A0F0C] px-6 backdrop-blur-sm">
           <div className="flex items-center gap-4">
             <SidebarTrigger className="text-gray-400 hover:text-green-400 -ml-2" />
-            <div className="flex items-center gap-2 text-green-400">
-              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <h1 className="text-base font-medium">
+            <div className="flex items-center gap-2 sm:gap-3 text-green-400 max-w-full">
+              <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+
+              <h1
+                className="
+      text-sm sm:text-base
+      font-medium
+      truncate
+      leading-tight
+    "
+              >
                 Welcome back, {firstName}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-lg bg-green-500/10 px-3 py-1.5 ring-1 ring-green-500/20">
-              <Leaf className="h-4 w-4 text-green-400" />
-              <div className="flex flex-col">
-                <span className="text-xs font-semibold text-green-400">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div
+              className="
+      flex items-center gap-2
+      rounded-lg
+      bg-green-500/10
+      px-2 py-1 sm:px-3 sm:py-1.5
+      ring-1 ring-green-500/20
+      max-w-full
+    "
+            >
+              <img
+                src="/logo.png"
+                alt="logo"
+                className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
+              />
+
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11px] sm:text-xs font-semibold text-green-400 leading-tight">
                   Sustainify
                 </span>
-                <span className="text-[10px] text-gray-400">{firstName}</span>
+
+                <span
+                  className="
+          text-[10px] sm:text-[11px]
+          text-gray-400
+          truncate
+        "
+                >
+                  {firstName}
+                </span>
               </div>
             </div>
           </div>
