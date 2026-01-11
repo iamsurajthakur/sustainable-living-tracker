@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion as Motion } from 'framer-motion'
 import {
   TrendingDown,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import TinySparkline from '@/components/charts/TinySparkline'
 import EnergyChart from '@/components/dashboard/ChartCard'
+import { getUserCo2 } from '@/api/action'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 25 },
@@ -27,10 +28,18 @@ const specialCard = {
 }
 
 const Overview = () => {
-  const [co2Data] = useState({
-    thisWeek: 42.2,
-    changePercent: -12,
-  })
+  const [co2Saved, setCo2Saved] = useState(0)
+
+  useEffect(() => {
+    const fetchCO2 = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const res = await getUserCo2(userId)
+      setCo2Saved(res.data.data.totalCO2.toFixed(2))
+    }
+    fetchCO2()
+  }, [])
 
   return (
     <div className="bg-[#08120d] p-4">
@@ -51,7 +60,7 @@ const Overview = () => {
             <div className="relative space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-green-400/70 text-sm font-medium uppercase tracking-wider">
-                  This Week's Impact
+                  Total CO₂ saved
                 </h3>
                 <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
                   <Leaf className="w-5 h-5 text-green-400" />
@@ -61,7 +70,7 @@ const Overview = () => {
               <div className="space-y-3">
                 <div className="flex items-baseline gap-2">
                   <p className="text-6xl font-bold text-white tracking-tight">
-                    {co2Data.thisWeek}
+                    {co2Saved}
                   </p>
                   <span className="text-3xl text-slate-400 font-light">Kg</span>
                 </div>
@@ -72,7 +81,7 @@ const Overview = () => {
                 <div className="flex items-center gap-2 bg-green-500/15 px-4 py-2 rounded-full border border-green-500/20">
                   <TrendingDown className="w-4 h-4 text-green-400" />
                   <span className="text-green-400 font-semibold text-base">
-                    {co2Data.changePercent}%
+                    12%
                   </span>
                 </div>
                 <span className="text-slate-500 text-sm">vs last week</span>
