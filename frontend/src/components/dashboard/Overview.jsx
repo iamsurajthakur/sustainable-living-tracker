@@ -77,14 +77,55 @@ const Overview = () => {
                 <p className="text-slate-400 text-sm">CO₂ emissions tracked</p>
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <div className="flex items-center gap-2 bg-green-500/15 px-4 py-2 rounded-full border border-green-500/20">
-                  <TrendingDown className="w-4 h-4 text-green-400" />
-                  <span className="text-green-400 font-semibold text-base">
-                    12%
+              <div
+                className="
+    flex flex-col sm:flex-row
+    items-start sm:items-center
+    gap-2 sm:gap-3
+    pt-2
+    max-w-full
+  "
+              >
+                <div
+                  className="
+      flex items-center gap-2
+      bg-green-500/15
+      px-3 py-1.5 sm:px-4 sm:py-2
+      rounded-full
+      border border-green-500/20
+      w-fit
+      flex-shrink-0
+    "
+                >
+                  <img
+                    src="/logo.png"
+                    alt="logo"
+                    className="h-4 w-4 sm:h-6 sm:w-6"
+                  />
+
+                  <span
+                    className="
+        text-green-400
+        font-semibold
+        text-sm sm:text-base
+        leading-tight
+        whitespace-nowrap
+      "
+                  >
+                    All-time
                   </span>
                 </div>
-                <span className="text-slate-500 text-sm">vs last week</span>
+
+                <span
+                  className="
+      text-slate-500
+      text-xs sm:text-sm
+      leading-tight
+      max-w-full
+    "
+                >
+                  total CO₂ saved so far
+                </span>
               </div>
             </div>
           </Motion.div>
