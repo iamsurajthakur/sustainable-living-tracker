@@ -37,6 +37,7 @@ const LogActivities = () => {
   const inputRef = useRef(null)
   const actionLabelMap = {}
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [, setShowSuccess] = useState(false)
 
   const [formData, setFormData] = useState({
     category: '',
