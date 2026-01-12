@@ -12,6 +12,7 @@ import {
 import TinySparkline from '@/components/charts/TinySparkline'
 import EnergyChart from '@/components/dashboard/ChartCard'
 import { getUserCo2 } from '@/api/action'
+import { getEnergyStats } from '@/api/stats'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 25 },
@@ -26,10 +27,17 @@ const specialCard = {
     transition: { duration: 0.7, ease: 'easeOut' },
   },
 }
+const statConfig = {
+  energy: { label: 'Electricity', icon: Zap, color: 'yellow' },
+  water: { label: 'Water', icon: Droplets, color: 'blue' },
+  transport: { label: 'Transport', icon: Flame, color: 'orange' },
+}
 
 const Overview = () => {
   const [co2Saved, setCo2Saved] = useState(0)
+  const [stats, setStats] = useState([])
 
+  //fetch user co2 from backend
   useEffect(() => {
     const fetchCO2 = async () => {
       const userData = JSON.parse(localStorage.getItem('user'))
@@ -40,6 +48,29 @@ const Overview = () => {
     }
     fetchCO2()
   }, [])
+
+  //fetch user energy stats from backend
+  useEffect(() => {
+    const fetchEnergyStats = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const data = await getEnergyStats(userId)
+      setStats(data.data)
+    }
+    fetchEnergyStats()
+  }, [])
+
+  const categories = ['energy', 'water', 'transport']
+  const mappedStats = categories.map((cat) => {
+    const item = stats.find((s) => s.category === cat) // use 'category' instead of '_id'
+    return {
+      category: cat,
+      count: item?.count || 0,
+      totalQuantity: item?.totalQuantity || 0,
+      trend: item?.trend || [], // include trend for TinySparkline
+    }
+  })
 
   return (
     <div className="bg-[#08120d] p-4">
@@ -139,101 +170,50 @@ const Overview = () => {
             className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden"
           >
             <h3 className="text-green-400/70 text-sm font-medium uppercase tracking-wider mb-6 mt-3">
-              energy usage
+              Energy Usage
             </h3>
 
             <div className="space-y-4">
-              {/* Electricity */}
-              <div className="flex items-center justify-between group cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition-colors">
-                    <Zap className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <div>
-                    <span className="text-slate-200 font-light text-sm">
-                      Electricity
-                    </span>
-                    <p className="text-xs text-slate-400">
-                      22 kWh today • <span className="text-green-400">-8%</span>
-                    </p>
-                  </div>
-                </div>
-                <div className="w-14 h-6 bg-slate-800/60 rounded-lg">
-                  <TinySparkline
-                    data={[
-                      { value: 12 },
-                      { value: 9 },
-                      { value: 11 },
-                      { value: 7 },
-                      { value: 14 },
-                      { value: 10 },
-                    ]}
-                    color="#05df72"
-                  />
-                </div>
-              </div>
+              {mappedStats.map((stat) => {
+                const Icon = statConfig[stat.category].icon
+                const color = statConfig[stat.category].color
+                const label = statConfig[stat.category].label
 
-              {/* Gas */}
-              <div className="flex items-center justify-between group cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-                    <Flame className="w-4 h-4 text-orange-400" />
-                  </div>
-                  <div>
-                    <span className="text-slate-200 font-light text-sm">
-                      Gas
-                    </span>
-                    <p className="text-xs text-slate-400">
-                      3.4 m³ today • <span className="text-red-400">+12%</span>
-                    </p>
-                  </div>
-                </div>
-                <div className="w-14 h-6 bg-slate-800/60 rounded-lg">
-                  <TinySparkline
-                    data={[
-                      { value: 10 },
-                      { value: 8 },
-                      { value: 7 },
-                      { value: 6 },
-                      { value: 5 },
-                      { value: 14 },
-                    ]}
-                    color="#05df72"
-                  />
-                </div>
-              </div>
+                return (
+                  <div
+                    key={stat.category}
+                    className="flex items-center justify-between group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-9 h-9 rounded-xl bg-${color}-500/10 flex items-center justify-center group-hover:bg-${color}-500/20 transition-colors`}
+                      >
+                        <Icon className={`w-4 h-4 text-${color}-400`} />
+                      </div>
+                      <div>
+                        <span className="text-slate-200 font-light text-sm">
+                          {label}
+                        </span>
+                        <p className="text-xs text-slate-400">
+                          {stat.totalQuantity} today •{' '}
+                          <span className="text-green-400">{stat.count}</span>
+                        </p>
+                      </div>
+                    </div>
 
-              {/* Water */}
-              <div className="flex items-center justify-between group cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                    <Droplets className="w-4 h-4 text-blue-400" />
+                    {/* Use real trend data from API */}
+                    <div className="w-14 h-6 bg-slate-800/60 rounded-lg">
+                      <TinySparkline
+                        data={stat.trend.map((d) => ({ value: d.value }))} // now uses real trend
+                        color="#05df72"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-slate-200 font-light text-sm">
-                      Water
-                    </span>
-                    <p className="text-xs text-slate-400">
-                      45 L today • <span className="text-green-400">-3%</span>
-                    </p>
-                  </div>
-                </div>
-                <div className="w-14 h-6 bg-slate-800/60 rounded-lg">
-                  <TinySparkline
-                    data={[
-                      { value: 12 },
-                      { value: 9 },
-                      { value: 11 },
-                      { value: 7 },
-                      { value: 14 },
-                      { value: 10 },
-                    ]}
-                    color="#05df72"
-                  />
-                </div>
-              </div>
+                )
+              })}
             </div>
           </Motion.div>
+
           {/* Achievements Card */}
           <Motion.div
             variants={cardVariants}
