@@ -5,7 +5,7 @@ import { Log } from '../models/log.model.js'
 import mongoose from 'mongoose'
 
 const getEnergyStats = asyncHandler(async (req, res) => {
-  const { userId } = req.body
+  const { userId } = req.query
 
   try {
     if (!userId) throw new ApiError(400, 'userId is missing')
