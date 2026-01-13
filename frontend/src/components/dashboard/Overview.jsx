@@ -94,12 +94,12 @@ const Overview = () => {
 
   const categories = ['energy', 'water', 'transport']
   const mappedStats = categories.map((cat) => {
-    const item = stats.find((s) => s.category === cat) // use 'category' instead of '_id'
+    const item = stats.find((s) => s.category === cat)
     return {
       category: cat,
       count: item?.count || 0,
       totalQuantity: item?.totalQuantity || 0,
-      trend: item?.trend || [], // include trend for TinySparkline
+      trend: item?.trend || [],
     }
   })
 
