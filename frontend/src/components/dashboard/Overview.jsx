@@ -1,13 +1,14 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react'
 import { motion as Motion } from 'framer-motion'
 import {
-  TrendingDown,
   TrendingUp,
   Zap,
   Droplets,
   Flame,
   Award,
   Leaf,
+  AlertCircle,
 } from 'lucide-react'
 import TinySparkline from '@/components/charts/TinySparkline'
 import EnergyChart from '@/components/dashboard/ChartCard'
@@ -32,6 +33,36 @@ const statConfig = {
   water: { label: 'Water', icon: Droplets, color: 'blue' },
   transport: { label: 'Transport', icon: Flame, color: 'orange' },
 }
+const insights = [
+  {
+    id: 'energy',
+    icon: Zap,
+    color: 'yellow',
+    title: 'Energy awareness',
+    text: 'Energy use adds up quietly. Reviewing how and when you use electricity is often the easiest place to start reducing impact.',
+  },
+  {
+    id: 'transport',
+    icon: Leaf,
+    color: 'green',
+    title: 'Everyday travel',
+    text: 'Short, frequent trips usually create more emissions than people expect. Small changes here tend to have outsized effects.',
+  },
+  {
+    id: 'consistency',
+    icon: TrendingUp,
+    color: 'blue',
+    title: 'Build the habit',
+    text: 'Tracking regularly matters more than being perfect. Even rough inputs help build a clearer picture over time.',
+  },
+  {
+    id: 'missed-data',
+    icon: AlertCircle,
+    color: 'orange',
+    title: 'Incomplete picture',
+    text: 'Some areas aren’t being tracked yet. Filling in missing activities makes future insights more accurate and useful.',
+  },
+]
 
 const Overview = () => {
   const [co2Saved, setCo2Saved] = useState(0)
@@ -291,78 +322,28 @@ const Overview = () => {
              [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
             >
               {/* Energy Tip */}
-              <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Zap className="w-4 h-4 text-yellow-400" />
+              {insights.map(({ id, icon: Icon, color, text, action }) => (
+                <div
+                  key={id}
+                  className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2"
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-lg bg-${color}-500/10 flex items-center justify-center flex-shrink-0 mt-0.5`}
+                    >
+                      <Icon className={`w-4 h-4 text-${color}-400`} />
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed">
+                      {text}
+                    </p>
                   </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Electricity usage is 10% lower this month (~1.2 kWh saved,
-                    ~$0.20)
-                  </p>
+                  <button
+                    className={`text-xs text-${color}-400 hover:text-${color}-300 self-start`}
+                  >
+                    {action}
+                  </button>
                 </div>
-                <button className="text-xs text-yellow-400 hover:text-yellow-300 mt-1 self-start">
-                  Track my impact →
-                </button>
-              </div>
-
-              {/* Transport Tip */}
-              <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Leaf className="w-4 h-4 text-green-400" />
-                  </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Biking/cycling instead of driving reduces ~5kg CO₂ emissions
-                  </p>
-                </div>
-                <button className="text-xs text-green-400 hover:text-green-300 mt-1 self-start">
-                  Log my ride →
-                </button>
-              </div>
-
-              {/* Add more tips here, they will scroll automatically */}
-              <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Leaf className="w-4 h-4 text-green-400" />
-                  </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Biking/cycling instead of driving reduces ~5kg CO₂ emissions
-                  </p>
-                </div>
-                <button className="text-xs text-green-400 hover:text-green-300 mt-1 self-start">
-                  Log my ride →
-                </button>
-              </div>
-
-              <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Leaf className="w-4 h-4 text-green-400" />
-                  </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Biking/cycling instead of driving reduces ~5kg CO₂ emissions
-                  </p>
-                </div>
-                <button className="text-xs text-green-400 hover:text-green-300 mt-1 self-start">
-                  Log my ride →
-                </button>
-              </div>
-
-              <div className="bg-green-900/30 rounded-2xl p-4 border border-slate-700/50 hover:border-green-500/30 transition-colors flex flex-col gap-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Leaf className="w-4 h-4 text-green-400" />
-                  </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Biking/cycling instead of driving reduces ~5kg CO₂ emissions
-                  </p>
-                </div>
-                <button className="text-xs text-green-400 hover:text-green-300 mt-1 self-start">
-                  Log my ride →
-                </button>
-              </div>
+              ))}
             </div>
           </Motion.div>
         </div>
