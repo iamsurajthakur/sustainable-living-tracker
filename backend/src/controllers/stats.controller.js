@@ -3,6 +3,7 @@ import asyncHandler from '../utils/asyncHandler.js'
 import ApiError from '../utils/apiError.js'
 import apiResponse from '../utils/apiResponse.js'
 import { Log } from '../models/log.model.js'
+import { getTimelineByUser } from '../services/stats.service.js'
 
 const getEnergyStats = asyncHandler(async (req, res) => {
   const { userId } = req.query
@@ -92,4 +93,18 @@ const getEnergyStats = asyncHandler(async (req, res) => {
   }
 })
 
-export { getEnergyStats }
+const getUserTimeline = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  if(!userId){
+    throw new ApiError(400,'userId is required')
+  }
+  const timeline = await getTimelineByUser(userId)
+
+  res.status(200).json(new apiResponse(200, timeline, 'Successfully fetched user timeline'))
+})
+
+export {
+  getEnergyStats,
+  getUserTimeline,
+}
