@@ -27,16 +27,16 @@ const getEnergyStats = asyncHandler(async (req, res) => {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
           category: { $in: categories },
-          activityDate: { $gte: todayStart, $lte: todayEnd } // today
-        }
+          activityDate: { $gte: todayStart, $lte: todayEnd }, // today
+        },
       },
       {
         $group: {
           _id: '$category',
           count: { $sum: 1 },
-          totalQuantity: { $sum: '$quantity' }
-        }
-      }
+          totalQuantity: { $sum: '$quantity' },
+        },
+      },
     ])
 
     const trendData = await Log.aggregate([
@@ -44,23 +44,25 @@ const getEnergyStats = asyncHandler(async (req, res) => {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
           category: { $in: categories },
-          activityDate: { $gte: sevenDaysAgo, $lte: todayEnd }
-        }
+          activityDate: { $gte: sevenDaysAgo, $lte: todayEnd },
+        },
       },
       {
         $group: {
           _id: {
             category: '$category',
-            date: { $dateToString: { format: '%Y-%m-%d', date: '$activityDate' } }
+            date: {
+              $dateToString: { format: '%Y-%m-%d', date: '$activityDate' },
+            },
           },
-          totalQuantity: { $sum: '$quantity' }
-        }
+          totalQuantity: { $sum: '$quantity' },
+        },
       },
-      { $sort: { '_id.date': 1 } }
+      { $sort: { '_id.date': 1 } },
     ])
 
     const trends = {}
-    categories.forEach(cat => {
+    categories.forEach((cat) => {
       trends[cat] = []
       for (let i = 0; i < 7; i++) {
         const date = new Date(sevenDaysAgo)
@@ -70,41 +72,64 @@ const getEnergyStats = asyncHandler(async (req, res) => {
       }
     })
 
-    trendData.forEach(item => {
+    trendData.forEach((item) => {
       const { category, date } = item._id
-      const idx = trends[category].findIndex(d => d.date === date)
+      const idx = trends[category].findIndex((d) => d.date === date)
       if (idx !== -1) trends[category][idx].value = item.totalQuantity
     })
 
-    const result = categories.map(cat => {
-      const todayItem = todayCounts.find(t => t._id === cat)
+    const result = categories.map((cat) => {
+      const todayItem = todayCounts.find((t) => t._id === cat)
       return {
         category: cat,
         count: todayItem?.count || 0,
         totalQuantity: todayItem?.totalQuantity || 0,
-        trend: trends[cat]
+        trend: trends[cat],
       }
     })
 
     return res.status(200).json(new apiResponse(200, result, 'Success'))
   } catch (error) {
     console.error('something went wrong: ', error)
-    return res.status(500).json({ success: false, message: 'Internal Server Error' })
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' })
   }
 })
 
 const getUserTimeline = asyncHandler(async (req, res) => {
   const { userId } = req.params
 
-  if(!userId){
-    throw new ApiError(400,'userId is required')
+  if (!userId) {
+    throw new ApiError(400, 'userId is required')
   }
   const timeline = await getTimelineByUser(userId)
 
-  res.status(200).json(new apiResponse(200, timeline, 'Successfully fetched user timeline'))
+  res
+    .status(200)
+    .json(new apiResponse(200, timeline, 'Successfully fetched user timeline'))
 })
 
-export {
-  getEnergyStats,
-  getUserTimeline,
-}
+const getTotalActivities = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  if (!userId) {
+    throw new ApiError(400, 'userId is missing')
+  }
+
+  const totalActivities = await Log.countDocuments({
+    userId: new mongoose.Types.ObjectId(userId),
+  })
+
+  res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        totalActivities,
+        'Successfully fetched total activities'
+      )
+    )
+})
+
+export { getEnergyStats, getUserTimeline, getTotalActivities }

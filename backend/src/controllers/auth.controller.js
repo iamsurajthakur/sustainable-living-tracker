@@ -4,8 +4,8 @@ import apiResponse from '../utils/apiResponse.js'
 import { User } from '../models/user.model.js'
 import jwt from 'jsonwebtoken'
 
-const generateAccessAndRefreshTokens = async(userId) => {
-  try{
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
     const user = await User.findById(userId)
     const accessToken = user.generateAccessToken()
     const refreshToken = user.generateRefreshToken()
@@ -14,7 +14,7 @@ const generateAccessAndRefreshTokens = async(userId) => {
     await user.save({ validateBeforeSave: false })
 
     return { accessToken, refreshToken }
-  } catch(error) {
+  } catch (error) {
     throw new apiError(500, 'Something went wrong.', error)
   }
 }
@@ -70,22 +70,24 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new apiError(401, 'Invalid email or password.')
   }
 
-  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+    user._id
+  )
 
-  if(!accessToken){
+  if (!accessToken) {
     throw new apiError(500, 'Access Token generation failed')
   }
 
   const loggedInUser = {
     _id: user._id,
     fullName: user.fullName,
-    email: user.email
+    email: user.email,
   }
 
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // Have to set "production" in the hosting platform.
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   }
 
   return res
@@ -96,7 +98,8 @@ const loginUser = asyncHandler(async (req, res) => {
       new apiResponse(
         200,
         {
-          user: loggedInUser, accessToken
+          user: loggedInUser,
+          accessToken,
         },
         'User logged in successfully.'
       )
@@ -108,17 +111,17 @@ const logout = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $unset: {
-        refreshToken: 1
-      }
+        refreshToken: 1,
+      },
     },
     {
-      new: true
+      new: true,
     }
   )
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'development',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   }
 
   return res
@@ -129,19 +132,22 @@ const logout = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies.refreshToken
-  if(!incomingRefreshToken){
+  if (!incomingRefreshToken) {
     throw new apiError(401, 'Unauthorized request')
   }
 
   try {
-    const decodedRefreshToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    const decodedRefreshToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    )
 
     const user = await User.findById(decodedRefreshToken?._id)
-    if(!user){
+    if (!user) {
       throw new apiError(401, 'Invalid refresh token')
     }
 
-    if(incomingRefreshToken !== user?.refreshToken){
+    if (incomingRefreshToken !== user?.refreshToken) {
       throw new apiError(401, 'Refresh token is expired or used')
     }
 
@@ -149,15 +155,17 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/'
+      path: '/',
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user?._id)
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+      user?._id
+    )
 
     user.refreshToken = refreshToken
     await user.save()
 
-    if(!accessToken || !refreshToken){
+    if (!accessToken || !refreshToken) {
       throw new apiError(500, 'unauthorized request')
     }
     res
@@ -165,7 +173,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .cookie('refreshToken', refreshToken, option)
       .cookie('accessToken', accessToken, option)
       .json(
-        new apiResponse(200,
+        new apiResponse(
+          200,
           { accessToken, refreshToken },
           'Access token refreshed'
         )
@@ -179,4 +188,4 @@ const dashboard = asyncHandler(async (req, res) => {
   return res.status(200).json(new apiResponse(200, 'Dashboard Page'))
 })
 
-export { registerUser, loginUser, logout, refreshAccessToken,dashboard }
+export { registerUser, loginUser, logout, refreshAccessToken, dashboard }

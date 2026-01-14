@@ -5,38 +5,38 @@ const userActionSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
 
     actionKey: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
 
     label: {
       type: String,
-      required: true
+      required: true,
     },
 
     baseUnit: {
       type: String,
-      required: true
+      required: true,
     },
 
     supportedUnits: [
       {
         unit: String,
-        toBaseFactor: Number
-      }
+        toBaseFactor: Number,
+      },
     ],
 
     co2PerBaseUnit: {
       type: Number,
-      required: true
+      required: true,
     },
 
-    baseline: Number
+    baseline: Number,
   },
   { timestamps: true }
 )

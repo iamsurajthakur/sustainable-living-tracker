@@ -5,8 +5,8 @@ export async function getTimelineByUser(userId) {
   return await Log.aggregate([
     {
       $match: {
-        userId: new mongoose.Types.ObjectId(userId)
-      }
+        userId: new mongoose.Types.ObjectId(userId),
+      },
     },
     {
       $group: {
@@ -19,10 +19,10 @@ export async function getTimelineByUser(userId) {
             quantity: '$quantity',
             unit: '$unit',
             co2: '$co2',
-            time: '$createdAt'
-          }
-        }
-      }
+            time: '$createdAt',
+          },
+        },
+      },
     },
 
     { $sort: { _id: -1 } },
