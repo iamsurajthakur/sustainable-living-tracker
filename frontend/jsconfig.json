@@ -1,6 +1,5 @@
 {
-  "references": [
-  ],
+  "references": [],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

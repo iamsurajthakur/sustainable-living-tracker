@@ -629,7 +629,7 @@ const LogActivities = () => {
               className="bg-[#1a2820] border border-[#2d3d34] rounded-xl p-6 max-h-100"
             >
               <h2 className="text-xl font-semibold text-white mb-4">
-                Today's Activities ({todaysActivities.length})
+                Total Activities ({todaysActivities.length})
               </h2>
 
               {todaysActivities.length === 0 ? (
