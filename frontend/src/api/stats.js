@@ -14,3 +14,8 @@ export const getTotalActivities = async (userId) => {
   const res = await api.get(`/api/v1/stats/getTotalActivities/${userId}`)
   return res.data
 }
+
+export const getRecentActivities = async (userId) => {
+  const res = await api.get(`/api/v1/stats/getRecentActivities/${userId}`)
+  return res.data
+}

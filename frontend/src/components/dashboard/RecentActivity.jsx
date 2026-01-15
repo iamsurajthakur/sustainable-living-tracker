@@ -1,56 +1,8 @@
-import React, { useState } from 'react'
-import { Droplet, Trash2, Zap, Car } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Droplet, Trash2, Zap, Car, Heart } from 'lucide-react'
 import { motion as Motion } from 'framer-motion'
+import { getRecentActivities } from '@/api/stats'
 
-// Mock data - replace with actual API data
-const mockActivities = [
-  {
-    id: 1,
-    title: 'Took 5-minute shower',
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    category: 'Water',
-    impact: 'Saved ~40L water',
-  },
-  {
-    id: 2,
-    title: 'Turned off unused devices',
-    timestamp: new Date(
-      Date.now() - 1 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000
-    ), // Yesterday
-    category: 'Energy',
-    impact: 'Saved ~0.5 kWh',
-  },
-  {
-    id: 3,
-    title: 'Composted food scraps',
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    category: 'Waste',
-    impact: 'Diverted 0.3kg from landfill',
-  },
-  {
-    id: 4,
-    title: 'Used reusable water bottle',
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    category: 'Waste',
-    impact: 'Avoided 1 plastic bottle',
-  },
-  {
-    id: 5,
-    title: 'Carpooled with colleagues',
-    timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-    category: 'Transport',
-    impact: 'Saved 2kg CO₂',
-  },
-  {
-    id: 6,
-    title: 'Fixed leaking faucet',
-    timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-    category: 'Water',
-    impact: 'Prevented 20L daily waste',
-  },
-]
-
-// Category configuration - Dark theme
 const categoryConfig = {
   Waste: {
     icon: Trash2,
@@ -68,7 +20,43 @@ const categoryConfig = {
     icon: Car,
     color: 'text-emerald-400',
   },
+  Lifestyle: {
+    icon: Heart,
+    color: 'text-emerald-400',
+  },
 }
+
+const humanizeAction = (actionKey, quantity, unit) => {
+  const map = {
+    localproduct: `Local Product ( ${quantity} ${unit || ''})`,
+    cycle: `Cycled ( ${quantity} ${unit || ''})`,
+    rainwatercollection: `Rainwater Collection ( ${quantity} ${unit || ''})`,
+    reusedItem: `Reused Items (${quantity} ${unit || ''})`,
+    shorterShower: `Shorter Shower ( ${quantity} ${unit || ''})`,
+    publicTransit: `Public Transit ( ${quantity} ${unit || ''})`,
+    ev: `Electric Vehicle ( ${quantity} ${unit || ''})`,
+    carpool: `Carpooled ( ${quantity} ${unit || ''})`,
+    repairedItem: `Repaired Item ( ${quantity} ${unit || ''})`,
+    turnedOffDevices: `Turned Off Devices ( ${quantity} ${unit || ''})`,
+    reusedWater: `Reused Water ( ${quantity} ${unit || ''})`,
+    rainwaterCollection: `Rainwater Collection ( ${quantity} ${unit || ''})`,
+    fixLeak: `Fixed Leak ( ${quantity} ${unit || ''})`,
+    compost: `Composted ( ${quantity} ${unit || ''})`,
+    recycle: `Recycled ( ${quantity} ${unit || ''})`,
+    zeroWasteShopping: `Zero Waste Shopping ( ${quantity} ${unit || ''})`,
+    ledLight: `Used LED Lights ( ${quantity} ${unit || ''})`,
+    solarPower: `Used Solar Power ( ${quantity} ${unit || ''})`,
+    naturalLighting: `Used Natural Lighting ( ${quantity} ${unit || ''})`,
+    localProduct: `Local Product ( ${quantity} ${unit || ''})`,
+    Donate: `Donated ( ${quantity} ${unit || ''})`,
+    plantMeal: `Plant Based Meal ( ${quantity} ${unit || ''})`,
+    walk: `Walked ( ${quantity} ${unit || ''})`,
+  }
+
+  return map[actionKey] || actionKey
+}
+
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1)
 
 // Helper function to get relative time
 const getRelativeTime = (timestamp) => {
@@ -92,16 +80,21 @@ const getRelativeTime = (timestamp) => {
 }
 
 // Filter function
-const filterActivities = (activities, filter) => {
+const filterActivities = (activities = [], filter) => {
+  if (!Array.isArray(activities)) return []
+
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
   if (filter === 'today') {
     return activities.filter((a) => a.timestamp >= todayStart)
-  } else if (filter === 'week') {
+  }
+
+  if (filter === 'week') {
     return activities.filter((a) => a.timestamp >= weekStart)
   }
+
   return activities
 }
 
@@ -142,8 +135,30 @@ const ActivityItem = ({ activity, index }) => {
 
 // RecentActivity Component
 const RecentActivity = () => {
-  const [filter, setFilter] = useState('all')
-  const activities = filterActivities(mockActivities, filter)
+  const [filter] = useState('all')
+  const [recentActivities, setRecentActivities] = useState([])
+  const activities = filterActivities(recentActivities, filter)
+
+  // Fetch recent activities from the backend
+  useEffect(() => {
+    const fetchRecentActivities = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const res = await getRecentActivities(userId)
+
+      const normalized = (res.data || []).map((log) => ({
+        _id: log._id,
+        title: humanizeAction(log.actionKey, log.quantity, log.unit),
+        timestamp: new Date(log.activityDate),
+        category: capitalize(log.category),
+        impact: `${log.co2.toFixed(2)} kg CO₂ saved`,
+      }))
+
+      setRecentActivities(normalized)
+    }
+    fetchRecentActivities()
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#0a0f0d]">
@@ -153,23 +168,6 @@ const RecentActivity = () => {
           <h1 className="text-xl font-semibold text-gray-100 mb-3">
             Recent Activity
           </h1>
-
-          {/* Filter Tabs */}
-          <div className="flex gap-2">
-            {['all', 'today', 'week'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-colors ${
-                  filter === f
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                {f === 'all' ? 'All' : f === 'today' ? 'Today' : 'This Week'}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -179,7 +177,7 @@ const RecentActivity = () => {
           <div className="bg-[#0f1612] border border-gray-800 rounded-lg overflow-hidden">
             {activities.map((activity, index) => (
               <ActivityItem
-                key={activity.id}
+                key={activity._id}
                 activity={activity}
                 index={index}
               />

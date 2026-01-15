@@ -10,11 +10,6 @@ const History = () => {
   const [co2Saved, setCo2Saved] = useState(0)
   const [totalActivities, setTotalActivities] = useState(0)
 
-  const periodSummary = {
-    totalActivities: 23,
-    co2Saved: co2Saved,
-    mostFrequentCategory: 'Transportation',
-  }
   //fetch user co2 from backend
   useEffect(() => {
     const fetchCO2 = async () => {
@@ -77,17 +72,29 @@ const History = () => {
 
   function humanizeAction(actionKey, quantity, unit) {
     const map = {
-      zerowasteshopping: `Zero Waste Shopping (${quantity} ${unit || ''})`,
-      localproduct: `Local Product (${quantity} ${unit || ''})`,
-      cycle: `Cycled (${quantity} ${unit || ''})`,
-      rainwatercollection: `Rainwater Collection (${quantity} ${unit || ''})`,
-      reuseditem: `Reused Items (${quantity} ${unit || ''})`,
-      shorterShower: `Shorter Shower (${quantity} ${unit || ''})`,
-      publicTransit: `Public Transit (${quantity} ${unit || ''})`,
-      ev: `Electric Vehicle (${quantity} ${unit || ''})`,
-      carpool: `Carpool (${quantity} ${unit || ''})`,
-      repairedItem: `Repaired Item (${quantity} ${unit || ''})`,
-      turnedOffDevices: `Turned Off Devices (${quantity} ${unit || ''})`,
+      localproduct: `Local Product ( ${quantity} ${unit || ''})`,
+      cycle: `Cycled ( ${quantity} ${unit || ''})`,
+      rainwatercollection: `Rainwater Collection ( ${quantity} ${unit || ''})`,
+      reusedItem: `Reused Items (${quantity} ${unit || ''})`,
+      shorterShower: `Shorter Shower ( ${quantity} ${unit || ''})`,
+      publicTransit: `Public Transit ( ${quantity} ${unit || ''})`,
+      ev: `Electric Vehicle ( ${quantity} ${unit || ''})`,
+      carpool: `Carpooled ( ${quantity} ${unit || ''})`,
+      repairedItem: `Repaired Item ( ${quantity} ${unit || ''})`,
+      turnedOffDevices: `Turned Off Devices ( ${quantity} ${unit || ''})`,
+      reusedWater: `Reused Water ( ${quantity} ${unit || ''})`,
+      rainwaterCollection: `Rainwater Collection ( ${quantity} ${unit || ''})`,
+      fixLeak: `Fixed Leak ( ${quantity} ${unit || ''})`,
+      compost: `Composted ( ${quantity} ${unit || ''})`,
+      recycle: `Recycled ( ${quantity} ${unit || ''})`,
+      zeroWasteShopping: `Zero Waste Shopping ( ${quantity} ${unit || ''})`,
+      ledLight: `Used LED Lights ( ${quantity} ${unit || ''})`,
+      solarPower: `Used Solar Power ( ${quantity} ${unit || ''})`,
+      naturalLighting: `Used Natural Lighting ( ${quantity} ${unit || ''})`,
+      localProduct: `Local Product ( ${quantity} ${unit || ''})`,
+      Donate: `Donated ( ${quantity} ${unit || ''})`,
+      plantMeal: `Plant Based Meal ( ${quantity} ${unit || ''})`,
+      walk: `Walked ( ${quantity} ${unit || ''})`,
     }
 
     return map[actionKey] || actionKey
@@ -223,7 +230,7 @@ const History = () => {
                 </div>
                 <div className="flex items-baseline gap-1 sm:gap-1.5">
                   <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400">
-                    {periodSummary.co2Saved}
+                    {co2Saved}
                   </p>
                   <span className="text-sm sm:text-base font-semibold text-emerald-400/70">
                     kg
@@ -243,7 +250,7 @@ const History = () => {
                   </div>
                 </div>
                 <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white capitalize truncate">
-                  {periodSummary.mostFrequentCategory}
+                  Transportation
                 </p>
                 <div className="mt-2 h-1 w-12 sm:w-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
               </div>
