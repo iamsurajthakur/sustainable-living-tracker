@@ -132,4 +132,24 @@ const getTotalActivities = asyncHandler(async (req, res) => {
     )
 })
 
-export { getEnergyStats, getUserTimeline, getTotalActivities }
+const getRecentActivities = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  if(!userId){
+    throw new ApiError(400,'userId is missing')
+  }
+
+  const startDate = new Date()
+  startDate.setHours(0,0,0,0)
+  startDate.setDate(startDate.getDate() - 2)// the number is represented as data we need of that number of days
+
+  const logs = await Log.find({
+    userId,
+    activityDate: { $gte: startDate }
+  }).sort({ activityDate: -1, createdAt: -1 }).limit(30).select('category actionKey quantity unit co2 activityDate note').lean()
+
+  res.status(200).json(new apiResponse(200, logs, 'Recent activities fetched successfully'))
+
+})
+
+export { getEnergyStats, getUserTimeline, getTotalActivities, getRecentActivities }
