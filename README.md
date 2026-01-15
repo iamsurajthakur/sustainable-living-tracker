@@ -198,9 +198,6 @@ We welcome contributions! Here's how you can help:
 
 Please ensure your code passes linting checks and follows the existing code style.
 
-## 📝 License
-
-This project is licensed under the ISC License - see the LICENSE file for details.
 ---
 
 **Ready to make a difference?** Start tracking your sustainable lifestyle today! 🌍
