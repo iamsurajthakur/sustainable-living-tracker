@@ -41,11 +41,13 @@ app.get('/', (_, res) => {
 import userRouter from './routes/auth.route.js'
 import actionRouter from './routes/action.route.js'
 import statsRouter from './routes/stats.route.js'
+import challengeRouter from './routes/challenge.route.js'
 
 // Routes declaration
 app.use('/api/v1/auth', userRouter)
 app.use('/api/v1/action', actionRouter)
 app.use('/api/v1/stats', statsRouter)
+app.use('/api/v1/challenges', challengeRouter)
 
 // Global error handler
 app.use(errorHandler)
