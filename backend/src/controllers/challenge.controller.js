@@ -71,7 +71,20 @@ const startChallenges = asyncHandler(async (req, res) => {
   res.status(201).json(new apiResponse(200, data, 'Challenge created successfully.'))
 })
 
+const getUserChallenges = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+  const { status } = req.query
+
+  const query = { userId }
+  if(status) query.status = status
+
+  const challenges = await userChallenges.find(query).populate('challengeId')
+
+  res.status(200).json(new apiResponse(200, challenges, 'User challenges fetch successfully.'))
+})
+
 export {
   getChallenges,
   startChallenges,
+  getUserChallenges,
 }
