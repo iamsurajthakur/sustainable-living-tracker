@@ -1,18 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   CheckCircle,
-  CheckCircle2,
   Leaf,
   Zap,
   Trash2,
   Car,
-  UtensilsCrossed,
   Award,
   Flame,
-  Filter,
-  X,
+  Droplet,
 } from 'lucide-react'
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,20 +20,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-
 import {
   SuccessAlert,
   TaskAlert,
   ChallengeCompleteAlert,
 } from '@/components/dashboard/SuccessAlert'
 import { motion as Motion } from 'framer-motion'
-import { getChallenges } from '@/api/challenge'
+import { getChallenges, getUserChallenges } from '@/api/challenge'
 
 const categoryIcons = {
   Energy: Zap,
   Waste: Trash2,
   Transport: Car,
-  Food: UtensilsCrossed,
+  Water: Droplet,
 }
 
 // ActiveChallengeCard Component
@@ -131,6 +126,41 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
         </button>
       </div>
     </Motion.div>
+  )
+}
+
+const ActiveChallenges = () => {
+  const [userChallenges, setUserChallenges] = useState([])
+  const [currentDay] = useState(1) // Or calculate from startDate
+
+  useEffect(() => {
+    const fetchUserChallenges = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const res = await getUserChallenges(userId, 'active')
+      setUserChallenges(res.data.data)
+    }
+    fetchUserChallenges()
+  }, [])
+
+  const handleComplete = (challengeId) => {
+    console.log('Challenge completed:', challengeId)
+    // Optionally: update backend or refetch challenges
+  }
+
+  return (
+    <div className="grid gap-4">
+      {userChallenges.map((uc, index) => (
+        <ActiveChallengeCard
+          key={uc._id}
+          challenge={uc.challengeId} // pass the inner challenge object
+          currentDay={currentDay} // you could calculate days from startDate
+          onComplete={() => handleComplete(uc._id)}
+          index={index}
+        />
+      ))}
+    </div>
   )
 }
 
@@ -257,8 +287,7 @@ const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
 
 // ChallengeCard Component
 const ChallengeCard = ({ challenge, onStart, index }) => {
-  const Icon = categoryIcons[challenge.category] || (() => null)
-
+  const Icon = categoryIcons[challenge.category]
   const difficultyColors = {
     Easy: 'bg-green-900/40 text-green-400',
     Medium: 'bg-yellow-900/40 text-yellow-400',
@@ -325,6 +354,7 @@ export default function EcoChallenge() {
   })
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [challenges, setChallenges] = useState([])
+  const [userChallenges, setUserChallenges] = useState([])
 
   // Load stats from localStorage
   const [stats, setStats] = useState(() => {
@@ -357,6 +387,18 @@ export default function EcoChallenge() {
 
     fetchChallenges()
   }, [])
+
+  // Fetch user challenges from the backend
+  useEffect(() => {
+    const fetchUserChallenges = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const res = await getUserChallenges(userId, 'active')
+      setUserChallenges(res.data.data)
+    }
+    fetchUserChallenges()
+  })
 
   const handleFilterChange = (type, value) => {
     if (type === 'clear') {
@@ -457,8 +499,6 @@ export default function EcoChallenge() {
           autoClose
           duration={3000}
         />
-        {console.log(challenges)}
-
         {/* Task Completed */}
         <TaskAlert
           show={showTaskSuccessAlert}
@@ -468,7 +508,6 @@ export default function EcoChallenge() {
           autoClose
           duration={3000}
         />
-
         {/* Challenge Completed */}
         <ChallengeCompleteAlert
           show={showChallengeCompleteAlert && showCompletedChallengeTitle}
@@ -554,21 +593,21 @@ export default function EcoChallenge() {
         </div>
 
         {/* Active Challenge Section */}
-        {activeChallenges.length > 0 && (
+        {userChallenges.length > 0 && (
           <div
             className="mb-4 p-2 max-h-[400px] overflow-y-auto [mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]
              [-webkit-mask-image:linear-gradient(to_bottom,black_calc(100%-40px),transparent_100%)]"
           >
             <h2 className="text-base font-semibold text-white mb-3">
-              Active Challenges ({activeChallenges.length})
+              Active Challenges ({userChallenges.length})
             </h2>
             <div className="space-y-3">
-              {activeChallenges.map((activeChallenge) => (
-                <ActiveChallengeCard
-                  key={activeChallenge.id}
-                  challenge={activeChallenge}
-                  currentDay={activeChallenge.currentDay}
-                  onComplete={() => handleComplete(activeChallenge.id)}
+              {userChallenges.map((userChallenge) => (
+                <ActiveChallenges
+                  key={userChallenge._id}
+                  challenge={userChallenge}
+                  currentDay={userChallenge.currentDay}
+                  onComplete={() => handleComplete(userChallenge.id)}
                 />
               ))}
             </div>
