@@ -31,109 +31,7 @@ import {
   ChallengeCompleteAlert,
 } from '@/components/dashboard/SuccessAlert'
 import { motion as Motion } from 'framer-motion'
-
-// Sample data
-const challengesData = [
-  {
-    id: 1,
-    title: 'Use reusable bags for all shopping',
-    duration: '7 Days',
-    difficulty: 'Easy',
-    category: 'Waste',
-    impact: 'Save 7 plastic bags',
-    dailyTask: 'Did you use reusable bags for your shopping today?',
-  },
-  {
-    id: 2,
-    title: 'Unplug devices when not in use',
-    duration: '30 Days',
-    difficulty: 'Easy',
-    category: 'Energy',
-    impact: 'Reduce 5% energy consumption',
-    dailyTask: 'Did you unplug unused devices today?',
-  },
-  {
-    id: 3,
-    title: 'Bike or walk for short trips',
-    duration: '7 Days',
-    difficulty: 'Medium',
-    category: 'Transport',
-    impact: 'Reduce 10 kg CO2',
-    dailyTask: 'Did you bike or walk instead of driving today?',
-  },
-  {
-    id: 4,
-    title: 'Eat plant-based meals',
-    duration: '1 Day',
-    difficulty: 'Easy',
-    category: 'Food',
-    impact: 'Save 2.5 kg CO2',
-    dailyTask: 'Did you eat only plant-based meals today?',
-  },
-  {
-    id: 5,
-    title: 'Zero single-use plastics',
-    duration: '30 Days',
-    difficulty: 'Hard',
-    category: 'Waste',
-    impact: 'Eliminate 50+ plastic items',
-    dailyTask: 'Did you avoid all single-use plastics today?',
-  },
-  {
-    id: 6,
-    title: 'Switch off lights when leaving rooms',
-    duration: '7 Days',
-    difficulty: 'Easy',
-    category: 'Energy',
-    impact: 'Save 3 kWh',
-    dailyTask: 'Did you turn off lights when leaving rooms today?',
-  },
-  {
-    id: 7,
-    title: 'Use public transport only',
-    duration: '7 Days',
-    difficulty: 'Medium',
-    category: 'Transport',
-    impact: 'Reduce 15 kg CO2',
-    dailyTask: 'Did you use only public transport today?',
-  },
-  {
-    id: 8,
-    title: 'Meal prep to reduce food waste',
-    duration: '30 Days',
-    difficulty: 'Medium',
-    category: 'Food',
-    impact: 'Save 2 kg food waste/week',
-    dailyTask: 'Did you prep meals and avoid food waste today?',
-  },
-  {
-    id: 9,
-    title: 'Compost organic waste',
-    duration: '30 Days',
-    difficulty: 'Medium',
-    category: 'Waste',
-    impact: 'Divert 5 kg waste from landfills',
-    dailyTask: 'Did you compost your organic waste today?',
-  },
-  {
-    id: 10,
-    title: 'Take shorter showers',
-    duration: '7 Days',
-    difficulty: 'Easy',
-    category: 'Energy',
-    impact: 'Save 50 liters of water',
-    dailyTask: 'Did you keep your shower under 5 minutes today?',
-  },
-  {
-    id: 11,
-    title: 'Buy local produce only',
-    duration: '7 Days',
-    difficulty: 'Medium',
-    category: 'Food',
-    impact: 'Reduce transportation emissions',
-    dailyTask: 'Did you buy only local produce today?',
-  },
-]
+import { getChallenges } from '@/api/challenge'
 
 const categoryIcons = {
   Energy: Zap,
@@ -239,6 +137,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
 // FilterDropdown Component
 const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
   const dropdownRef = useRef(null)
+
   const activeFiltersCount = [
     filters.difficulty,
     filters.duration,
@@ -258,115 +157,98 @@ const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
     }
   }, [isOpen, onToggle])
 
+  const durationOptions = [
+    { label: '1 Day', value: 1 },
+    { label: '7 Days', value: 7 },
+    { label: '14 Days', value: 14 },
+    { label: '21 Days', value: 21 },
+    { label: '30 Days', value: 30 },
+  ]
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={onToggle}
-        className="flex items-center gap-2 px-3 py-1.5 bg-[#1a2b23] hover:bg-[#243530] border border-gray-700 rounded-lg text-sm font-medium text-gray-300 transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 bg-[#1a2b23] border border-gray-700 rounded-lg text-sm text-gray-300"
       >
-        <Filter className="w-4 h-4" />
         Filters
         {activeFiltersCount > 0 && (
-          <span className="bg-[#10b981] text-white text-xs px-1.5 py-0.5 rounded-full">
+          <span className="bg-[#10b981] text-white text-xs px-1.5 rounded-full">
             {activeFiltersCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-[#1a2b23] border border-gray-700 rounded-lg shadow-xl z-10 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-white">
-              Filter Challenges
-            </h3>
+        <div className="absolute right-0 mt-2 w-80 bg-[#1a2b23] border border-gray-700 rounded-lg p-4 z-10">
+          {/* Difficulty */}
+          <div className="mb-3">
+            <p className="text-xs text-gray-400 mb-1">Difficulty</p>
+            <div className="flex gap-2">
+              {['Easy', 'Medium', 'Hard'].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => onFilterChange('difficulty', level)}
+                  className={`px-3 py-1.5 rounded text-xs ${
+                    filters.difficulty === level
+                      ? 'bg-[#10b981] text-white'
+                      : 'bg-[#0f1a15] text-gray-300 border border-gray-700'
+                  }`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Duration */}
+          <div className="mb-3">
+            <p className="text-xs text-gray-400 mb-1">Duration</p>
+            <div className="flex gap-2 flex-wrap">
+              {durationOptions.map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => onFilterChange('duration', value)}
+                  className={`px-3 py-1.5 rounded text-xs ${
+                    filters.duration === value
+                      ? 'bg-[#10b981] text-white'
+                      : 'bg-[#0f1a15] text-gray-300 border border-gray-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Category */}
+          <div className="mb-3">
+            <p className="text-xs text-gray-400 mb-1">Category</p>
+            <div className="grid grid-cols-2 gap-2">
+              {['Energy', 'Waste', 'Transport', 'Water'].map((category) => (
+                <button
+                  key={category}
+                  onClick={() => onFilterChange('category', category)}
+                  className={`px-3 py-1.5 rounded text-xs ${
+                    filters.category === category
+                      ? 'bg-[#10b981] text-white'
+                      : 'bg-[#0f1a15] text-gray-300 border border-gray-700'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {activeFiltersCount > 0 && (
             <button
-              onClick={onToggle}
-              className="text-gray-400 hover:text-white transition-colors"
+              onClick={() => onFilterChange('clear')}
+              className="w-full text-sm text-[#10b981]"
             >
-              <X className="w-4 h-4" />
+              Clear all filters
             </button>
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs font-medium text-gray-400 mb-1.5">
-                Difficulty
-              </p>
-              <div className="flex gap-2">
-                {['Easy', 'Medium', 'Hard'].map((level) => (
-                  <button
-                    key={level}
-                    onClick={() => onFilterChange('difficulty', level)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      filters.difficulty === level
-                        ? 'bg-[#10b981] text-white'
-                        : 'bg-[#0f1a15] text-gray-300 hover:bg-[#162820] border border-gray-700'
-                    }`}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium text-gray-400 mb-1.5">
-                Duration
-              </p>
-              <div className="flex gap-2">
-                {['1 Day', '7 Days', '30 Days'].map((duration) => (
-                  <button
-                    key={duration}
-                    onClick={() => onFilterChange('duration', duration)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      filters.duration === duration
-                        ? 'bg-[#10b981] text-white'
-                        : 'bg-[#0f1a15] text-gray-300 hover:bg-[#162820] border border-gray-700'
-                    }`}
-                  >
-                    {duration}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium text-gray-400 mb-1.5">
-                Category
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {['Energy', 'Waste', 'Transport', 'Food'].map((category) => {
-                  const Icon = categoryIcons[category]
-                  return (
-                    <button
-                      key={category}
-                      onClick={() => onFilterChange('category', category)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 justify-center ${
-                        filters.category === category
-                          ? 'bg-[#10b981] text-white'
-                          : 'bg-[#0f1a15] text-gray-300 hover:bg-[#162820] border border-gray-700'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      {category}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {activeFiltersCount > 0 && (
-              <button
-                onClick={() => {
-                  onFilterChange('clear', null)
-                  onToggle()
-                }}
-                className="w-full text-sm text-[#10b981] hover:text-[#0ea571] font-medium py-2 hover:bg-[#0f1a15] rounded-lg transition-colors"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
+          )}
         </div>
       )}
     </div>
@@ -375,35 +257,28 @@ const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
 
 // ChallengeCard Component
 const ChallengeCard = ({ challenge, onStart, index }) => {
-  const Icon = categoryIcons[challenge.category]
+  const Icon = categoryIcons[challenge.category] || (() => null)
 
   const difficultyColors = {
-    Easy: 'bg-green-900/40 text-green-400 border border-green-700/30',
-    Medium: 'bg-yellow-900/40 text-yellow-400 border border-yellow-700/30',
-    Hard: 'bg-red-900/40 text-red-400 border border-red-700/30',
+    Easy: 'bg-green-900/40 text-green-400',
+    Medium: 'bg-yellow-900/40 text-yellow-400',
+    Hard: 'bg-red-900/40 text-red-400',
   }
 
   return (
     <Motion.div
-      initial={{ opacity: 0, y: 20 }} // start slightly below
-      animate={{ opacity: 1, y: 0 }} // move to natural position
-      transition={{
-        duration: 0.1,
-        delay: index * 0.15, // stagger one by one
-        type: 'spring',
-        stiffness: 100,
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
     >
-      <div className="bg-[#1a2b23] border border-gray-700/50 rounded-lg p-4 hover:border-[#10b981]/40 transition-all">
-        <div className="flex items-start justify-between mb-2.5">
-          <div className="flex items-center gap-1.5">
+      <div className="bg-[#1a2b23] border border-gray-700 rounded-lg p-4">
+        <div className="flex justify-between mb-2">
+          <div className="flex items-center gap-1">
             <Icon className="w-4 h-4 text-[#10b981]" />
-            <span className="text-xs font-medium text-gray-400">
-              {challenge.category}
-            </span>
+            <span className="text-xs text-gray-400">{challenge.category}</span>
           </div>
           <span
-            className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyColors[challenge.difficulty]}`}
+            className={`px-2 py-0.5 text-xs rounded ${difficultyColors[challenge.difficulty]}`}
           >
             {challenge.difficulty}
           </span>
@@ -413,40 +288,17 @@ const ChallengeCard = ({ challenge, onStart, index }) => {
           {challenge.title}
         </h3>
 
-        <div className="flex items-center gap-3 mb-3 text-xs text-gray-400">
-          <span>🕒 {challenge.duration}</span>
-          <span>🌱 {challenge.impact}</span>
+        <div className="flex gap-3 text-xs text-gray-400 mb-3">
+          <span>🕒 {challenge.duration} days</span>
+          <span>🌱 {challenge.co2Saved} kg CO₂</span>
         </div>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button className="w-full bg-[#10b981] hover:bg-[#0ea571] text-white cursor-pointer font-semibold py-2 px-3 rounded-lg transition-colors text-sm">
-              Start Challenge
-            </button>
-          </AlertDialogTrigger>
-
-          <AlertDialogContent className="bg-[#1a2b23]">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Start this challenge?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Once started, you can track your progress daily until
-                completion.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-
-            <AlertDialogFooter>
-              <AlertDialogCancel className="border border-green-600 text-green-700 cursor-pointer hover:bg-green-50">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onStart(challenge)}
-                className="bg-emerald-600 cursor-pointer text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500"
-              >
-                Start
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <button
+          onClick={() => onStart(challenge)}
+          className="w-full bg-[#10b981] text-white py-2 rounded"
+        >
+          Start Challenge
+        </button>
       </div>
     </Motion.div>
   )
@@ -472,6 +324,7 @@ export default function EcoChallenge() {
     category: null,
   })
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
+  const [challenges, setChallenges] = useState([])
 
   // Load stats from localStorage
   const [stats, setStats] = useState(() => {
@@ -495,15 +348,30 @@ export default function EcoChallenge() {
     localStorage.setItem('ecoStats', JSON.stringify(stats))
   }, [stats])
 
-  const handleFilterChange = (filterType, value) => {
-    if (filterType === 'clear') {
-      setFilters({ difficulty: null, duration: null, category: null })
-    } else {
-      setFilters((prev) => ({
-        ...prev,
-        [filterType]: prev[filterType] === value ? null : value,
-      }))
+  // Fetch challenges from the backend
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      const res = await getChallenges()
+      setChallenges(res.data.data)
     }
+
+    fetchChallenges()
+  }, [])
+
+  const handleFilterChange = (type, value) => {
+    if (type === 'clear') {
+      setFilters({
+        difficulty: null,
+        duration: null,
+        category: null,
+      })
+      return
+    }
+
+    setFilters((prev) => ({
+      ...prev,
+      [type]: prev[type] === value ? null : value,
+    }))
   }
 
   const handleComplete = (challengeId) => {
@@ -560,15 +428,19 @@ export default function EcoChallenge() {
     setTimeout(() => setShowSuccessAlert(false), 3000)
   }
 
-  const filteredChallenges = challengesData.filter((challenge) => {
-    // Filter out all active challenges
-    if (activeChallenges.some((ac) => ac.id === challenge.id)) return false
-    if (filters.difficulty && challenge.difficulty !== filters.difficulty)
+  const filteredChallenges = challenges.filter((challenge) => {
+    if (filters.difficulty && challenge.difficulty !== filters.difficulty) {
       return false
-    if (filters.duration && challenge.duration !== filters.duration)
+    }
+
+    if (filters.category && challenge.category !== filters.category) {
       return false
-    if (filters.category && challenge.category !== filters.category)
+    }
+
+    if (filters.duration && challenge.duration !== filters.duration) {
       return false
+    }
+
     return true
   })
 
@@ -585,6 +457,7 @@ export default function EcoChallenge() {
           autoClose
           duration={3000}
         />
+        {console.log(challenges)}
 
         {/* Task Completed */}
         <TaskAlert
@@ -737,7 +610,7 @@ export default function EcoChallenge() {
             >
               {filteredChallenges.map((challenge, idx) => (
                 <ChallengeCard
-                  key={`${challenge.id}-${filters.difficulty}-${filters.duration}-${filters.category}`}
+                  key={`${challenge._id}-${filters.difficulty}-${filters.duration}-${filters.category}`}
                   index={idx}
                   challenge={challenge}
                   onStart={handleStartChallenge}
