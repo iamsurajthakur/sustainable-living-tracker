@@ -4,7 +4,7 @@ import ApiError from '../utils/apiError.js'
 import { Challenge } from '../models/challenges.model.js'
 import { userChallenges } from '../models/userChallenges.model.js'
 
-const getChallenges = asyncHandler(async (req, res) => {
+const getChallenges = asyncHandler(async (_, res) => {
   const challenges = await Challenge.find({ isActive: true })
 
   if(!challenges){
