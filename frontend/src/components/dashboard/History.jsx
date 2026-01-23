@@ -100,34 +100,6 @@ const History = () => {
     return map[actionKey] || actionKey
   }
 
-  // Mock data - Challenge History
-  const challenges = [
-    {
-      id: 1,
-      name: 'Zero-Waste Week',
-      completedDate: 'Dec 15, 2024',
-      status: 'Completed',
-    },
-    {
-      id: 2,
-      name: 'Plant-Based Month',
-      completedDate: 'Nov 30, 2024',
-      status: 'Completed',
-    },
-    {
-      id: 3,
-      name: 'Car-Free Challenge',
-      completedDate: 'Dec 10, 2024',
-      status: 'Failed',
-    },
-    {
-      id: 4,
-      name: 'Energy Saver Sprint',
-      completedDate: 'In Progress',
-      status: 'Ongoing',
-    },
-  ]
-
   const getCategoryIcon = (category) => {
     const icons = {
       transport: '🚗',
@@ -349,7 +321,7 @@ const History = () => {
             <h2 className="sticky top-0 z-20 text-xl font-medium text-white mb-4 bg-[#0a0a0a] p-4">
               Challenge History
             </h2>
-            <div className="bg-[#1a1a1a] rounded-xl overflow-hidden">
+            {/* <div className="bg-[#1a1a1a] rounded-xl overflow-hidden">
               {challenges.map((challenge, index) => (
                 <div
                   key={challenge.id}
@@ -382,7 +354,7 @@ const History = () => {
                   </div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

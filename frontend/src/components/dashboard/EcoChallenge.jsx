@@ -24,6 +24,7 @@ import {
   SuccessAlert,
   TaskAlert,
   ChallengeCompleteAlert,
+  ErrorAlert,
 } from '@/components/dashboard/SuccessAlert'
 import { motion as Motion } from 'framer-motion'
 import {
@@ -41,12 +42,14 @@ const categoryIcons = {
 
 // ActiveChallengeCard Component
 const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
-  const totalDays = parseInt(challenge.duration)
-  const progress = (currentDay / totalDays) * 100
-  const Icon = categoryIcons[challenge.category] || (() => null)
-  const COOLDOWN = 24 * 10 * 10 * 1000
+  // Handle nested challenge structure (challenge.challengeId)
+  const challengeData = challenge.challengeId || challenge
+  const totalDays = parseInt(challengeData.duration || 0)
+  const progress = totalDays > 0 ? (currentDay / totalDays) * 100 : 0
+  const Icon = categoryIcons[challengeData.category] || Leaf
+  const COOLDOWN = 24 * 60 * 60 * 1000 // 24 hours
 
-  const challengeKey = `lastCompletedAt_${challenge.id}`
+  const challengeKey = `lastCompletedAt_${challenge._id}`
   const [lastCompletedAt, setLastCompletedAt] = useState(() => {
     const stored = localStorage.getItem(challengeKey)
     return stored ? Number(stored) : null
@@ -62,13 +65,13 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
 
   return (
     <Motion.div
-      initial={{ opacity: 0, y: 50 }} // start invisible and below
-      animate={{ opacity: 1, y: 0 }} // animate to natural position
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{
         type: 'spring',
         stiffness: 100,
         duration: 0.5,
-        delay: index * 0.15, // stagger animation by index
+        delay: index * 0.15,
       }}
     >
       <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4">
@@ -77,13 +80,13 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
             <div className="flex items-center gap-2 mb-1.5">
               <Icon className="w-4 h-4 text-[#10b981]" />
               <span className="text-xs font-medium text-[#10b981]">
-                {challenge.category}
+                {challengeData.category}
               </span>
             </div>
             <h2 className="text-base font-bold text-white mb-1">
-              {challenge.title}
+              {challengeData.title}
             </h2>
-            <p className="text-xs text-gray-400">{challenge.impact}</p>
+            <p className="text-xs text-gray-400">{challengeData.impact}</p>
           </div>
         </div>
 
@@ -108,7 +111,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
           <p className="text-xs font-medium text-gray-300 mb-1.5">
             Today's Task
           </p>
-          <p className="text-sm text-gray-200">{challenge.dailyTask}</p>
+          <p className="text-sm text-gray-200">{challengeData.dailyTask}</p>
         </div>
 
         <button
@@ -130,41 +133,6 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
         </button>
       </div>
     </Motion.div>
-  )
-}
-
-const ActiveChallenges = () => {
-  const [userChallenges, setUserChallenges] = useState([])
-  const [currentDay] = useState(1) // Or calculate from startDate
-
-  useEffect(() => {
-    const fetchUserChallenges = async () => {
-      const userData = JSON.parse(localStorage.getItem('user'))
-      const userId = userData.user._id
-
-      const res = await getUserChallenges(userId, 'active')
-      setUserChallenges(res.data.data)
-    }
-    fetchUserChallenges()
-  }, [])
-
-  const handleComplete = (challengeId) => {
-    console.log('Challenge completed:', challengeId)
-    // Optionally: update backend or refetch challenges
-  }
-
-  return (
-    <div className="grid gap-4">
-      {userChallenges.map((uc, index) => (
-        <ActiveChallengeCard
-          key={uc._id}
-          challenge={uc.challengeId} // pass the inner challenge object
-          currentDay={currentDay} // you could calculate days from startDate
-          onComplete={() => handleComplete(uc._id)}
-          index={index}
-        />
-      ))}
-    </div>
   )
 }
 
@@ -291,7 +259,7 @@ const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
 
 // ChallengeCard Component
 const ChallengeCard = ({ challenge, onStart, index, isStarting }) => {
-  const Icon = categoryIcons[challenge.category]
+  const Icon = categoryIcons[challenge.category] || Leaf
   const difficultyColors = {
     Easy: 'bg-green-900/40 text-green-400',
     Medium: 'bg-yellow-900/40 text-yellow-400',
@@ -329,8 +297,8 @@ const ChallengeCard = ({ challenge, onStart, index, isStarting }) => {
         <button
           onClick={() => onStart(challenge._id)}
           disabled={isStarting}
-          className={`w-full py-2 rounded text-white
-    ${isStarting ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#10b981]'}`}
+          className={`w-full py-2 rounded text-white text-sm font-medium transition-colors
+            ${isStarting ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#10b981] hover:bg-[#0ea571]'}`}
         >
           {isStarting ? 'Starting...' : 'Start Challenge'}
         </button>
@@ -341,16 +309,12 @@ const ChallengeCard = ({ challenge, onStart, index, isStarting }) => {
 
 // Main App Component
 export default function EcoChallenge() {
-  // Load active challenges from localStorage
-  const [activeChallenges, setActiveChallenges] = useState(() => {
-    const stored = localStorage.getItem('activeChallenges')
-    return stored ? JSON.parse(stored) : []
-  })
-
+  const [userChallenges, setUserChallenges] = useState([])
   const [showSuccessAlert, setShowSuccessAlert] = useState(false)
   const [showTaskSuccessAlert, setShowTaskSuccessAlert] = useState(false)
-  const [lastCompletedTaskTitle, setLastCompletedTaskTitle] = useState('')
-  const [showCompletedChallengeTitle, setCompletedChallengeTitle] = useState()
+  const [errorMessage, setErrorMessage] = useState(false)
+  const [lastCompletedTaskTitle] = useState('')
+  const [showCompletedChallengeTitle] = useState()
   const [showChallengeCompleteAlert, setShowChallengeCompleteAlert] =
     useState(false)
   const [filters, setFilters] = useState({
@@ -360,30 +324,40 @@ export default function EcoChallenge() {
   })
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [challenges, setChallenges] = useState([])
-  const [userChallenges, setUserChallenges] = useState([])
-  const [, setStartingChallengeId] = useState(null)
+  const [startingChallengeId, setStartingChallengeId] = useState(null)
 
   // Fetch challenges from the backend
   useEffect(() => {
     const fetchChallenges = async () => {
-      const res = await getChallenges()
-      setChallenges(res.data.data)
+      try {
+        const res = await getChallenges()
+        console.log('Fetched challenges:', res.data.data)
+        setChallenges(res.data.data)
+      } catch (error) {
+        console.error('Failed to fetch challenges:', error)
+      }
     }
 
     fetchChallenges()
   }, [])
 
-  // Fetch user challenges from the backend
+  // Fetch user challenges from the backend - WITH DEPENDENCY ARRAY
   useEffect(() => {
     const fetchUserChallenges = async () => {
-      const userData = JSON.parse(localStorage.getItem('user'))
-      const userId = userData.user._id
+      try {
+        const userData = JSON.parse(localStorage.getItem('user'))
+        if (!userData?.user?._id) return
 
-      const res = await getUserChallenges(userId, 'active')
-      setUserChallenges(res.data.data)
+        const userId = userData.user._id
+        const res = await getUserChallenges(userId, 'active')
+        console.log('Fetched user challenges:', res.data.data)
+        setUserChallenges(res.data.data)
+      } catch (error) {
+        console.error('Failed to fetch user challenges:', error)
+      }
     }
     fetchUserChallenges()
-  })
+  }, [])
 
   const handleFilterChange = (type, value) => {
     if (type === 'clear') {
@@ -401,70 +375,34 @@ export default function EcoChallenge() {
     }))
   }
 
-  const handleComplete = (challengeId) => {
-    setActiveChallenges((prev) => {
-      const updated = prev.map((ac) => {
-        if (ac.id !== challengeId) return ac
-
-        const totalDays = parseInt(ac.duration)
-        const nextDay = ac.currentDay + 1
-
-        // Award points for completing the day
-        setStats((prevStats) => ({
-          ...prevStats,
-          streak: prevStats.streak + 1,
-          ecoPoints: prevStats.ecoPoints + 10,
-        }))
-
-        if (nextDay >= totalDays) {
-          // Challenge completed!
-          setCompletedChallengeTitle(ac.title)
-
-          setStats((prevStats) => ({
-            ...prevStats,
-            completed: prevStats.completed + 1,
-            ecoPoints: prevStats.ecoPoints + 50,
-          }))
-
-          setShowChallengeCompleteAlert(true)
-          setTimeout(() => {
-            setShowChallengeCompleteAlert(false)
-            setCompletedChallengeTitle(null)
-          }, 3000)
-
-          return null // Remove completed challenge
-        } else {
-          // Progress to next day
-          setLastCompletedTaskTitle(ac.title)
-          setShowTaskSuccessAlert(true)
-          setTimeout(() => setShowTaskSuccessAlert(false), 3000)
-
-          return { ...ac, currentDay: nextDay }
-        }
-      })
-
-      return updated.filter(Boolean) // Remove nulls
-    })
+  const handleComplete = async (userChallengeId) => {
+    console.log('Challenge completed:', userChallengeId)
+    // Add your completion logic here
   }
 
-  const handleStartChallenge = async (challenge) => {
+  const handleStartChallenge = async (challengeId) => {
     try {
-      setStartingChallengeId(challenge)
+      setStartingChallengeId(challengeId)
 
       const userData = JSON.parse(localStorage.getItem('user'))
+      if (!userData?.user?._id) {
+        throw new Error('User not logged in')
+      }
+
       const userId = userData.user._id
 
-      const startedChallenge = await startChallenge(userId, challenge)
+      // Start the challenge
+      await startChallenge(userId, challengeId)
 
-      setActiveChallenges((prev) => [
-        ...prev,
-        { ...startedChallenge.data, currentDay: 0 },
-      ])
+      const res = await getUserChallenges(userId, 'active')
+      setUserChallenges(res.data.data)
 
       setShowSuccessAlert(true)
       setTimeout(() => setShowSuccessAlert(false), 3000)
     } catch (error) {
-      console.error('Failed to start challenge', error.response?.data || error)
+      console.error('Failed to start challenge', error)
+      setErrorMessage('Challenge is already active.')
+      setTimeout(() => setErrorMessage(false), 3000)
     } finally {
       setStartingChallengeId(null)
     }
@@ -479,7 +417,7 @@ export default function EcoChallenge() {
       return false
     }
 
-    if (filters.duration && challenge.duration !== filters.duration) {
+    if (filters.duration && parseInt(challenge.duration) !== filters.duration) {
       return false
     }
 
@@ -488,14 +426,14 @@ export default function EcoChallenge() {
 
   return (
     <div className="min-h-screen bg-[#0a0f0d]">
-      {/*     ------------Success alert message block----------      */}
+      {/* Success alert message block */}
       <div className="fixed top-4 right-4 z-50 flex flex-col space-y-2 w-[90vw] sm:w-auto">
         {/* Challenge Started */}
         <SuccessAlert
-          show={showSuccessAlert && activeChallenges.length > 0}
+          show={showSuccessAlert && userChallenges.length > 0}
           onClose={() => setShowSuccessAlert(false)}
           title="Challenge Started"
-          message={`Challenge "${activeChallenges[activeChallenges.length - 1]?.title}" has started successfully.`}
+          message={`Challenge "${userChallenges[userChallenges.length - 1]?.challengeId?.title || userChallenges[userChallenges.length - 1]?.title || ''}" has started successfully.`}
           autoClose
           duration={3000}
         />
@@ -514,6 +452,13 @@ export default function EcoChallenge() {
           onClose={() => setShowChallengeCompleteAlert(false)}
           title="Challenge Completed"
           message={`🎉 Challenge completed! You've finished "${showCompletedChallengeTitle}"`}
+          autoClose
+          duration={3000}
+        />
+        <ErrorAlert
+          show={!!errorMessage}
+          onClose={() => setErrorMessage(null)}
+          message={errorMessage}
           autoClose
           duration={3000}
         />
@@ -590,12 +535,13 @@ export default function EcoChallenge() {
               Active Challenges ({userChallenges.length})
             </h2>
             <div className="space-y-3">
-              {userChallenges.map((userChallenge) => (
-                <ActiveChallenges
+              {userChallenges.map((userChallenge, index) => (
+                <ActiveChallengeCard
                   key={userChallenge._id}
                   challenge={userChallenge}
-                  currentDay={userChallenge.currentDay}
-                  onComplete={() => handleComplete(userChallenge.id)}
+                  currentDay={userChallenge.currentDay || 0}
+                  onComplete={() => handleComplete(userChallenge._id)}
+                  index={index}
                 />
               ))}
             </div>
@@ -603,7 +549,7 @@ export default function EcoChallenge() {
         )}
 
         {/* No Active Challenge State */}
-        {activeChallenges.length === 0 && (
+        {userChallenges.length === 0 && (
           <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4 mb-4 text-center">
             <Leaf className="w-8 h-8 text-[#10b981] mx-auto mb-2" />
             <h2 className="text-base font-semibold text-white mb-0.5">
@@ -619,7 +565,7 @@ export default function EcoChallenge() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold text-white">
-              {activeChallenges.length > 0
+              {userChallenges.length > 0
                 ? 'More Challenges'
                 : 'Available Challenges'}
             </h2>
@@ -637,10 +583,11 @@ export default function EcoChallenge() {
             >
               {filteredChallenges.map((challenge, idx) => (
                 <ChallengeCard
-                  key={`${challenge._id}-${filters.difficulty}-${filters.duration}-${filters.category}`}
+                  key={challenge._id}
                   index={idx}
                   challenge={challenge}
                   onStart={handleStartChallenge}
+                  isStarting={startingChallengeId === challenge._id}
                 />
               ))}
             </div>
