@@ -26,7 +26,11 @@ import {
   ChallengeCompleteAlert,
 } from '@/components/dashboard/SuccessAlert'
 import { motion as Motion } from 'framer-motion'
-import { getChallenges, getUserChallenges } from '@/api/challenge'
+import {
+  getChallenges,
+  getUserChallenges,
+  startChallenge,
+} from '@/api/challenge'
 
 const categoryIcons = {
   Energy: Zap,
@@ -286,7 +290,7 @@ const FilterDropdown = ({ filters, onFilterChange, isOpen, onToggle }) => {
 }
 
 // ChallengeCard Component
-const ChallengeCard = ({ challenge, onStart, index }) => {
+const ChallengeCard = ({ challenge, onStart, index, isStarting }) => {
   const Icon = categoryIcons[challenge.category]
   const difficultyColors = {
     Easy: 'bg-green-900/40 text-green-400',
@@ -323,10 +327,12 @@ const ChallengeCard = ({ challenge, onStart, index }) => {
         </div>
 
         <button
-          onClick={() => onStart(challenge)}
-          className="w-full bg-[#10b981] text-white py-2 rounded"
+          onClick={() => onStart(challenge._id)}
+          disabled={isStarting}
+          className={`w-full py-2 rounded text-white
+    ${isStarting ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#10b981]'}`}
         >
-          Start Challenge
+          {isStarting ? 'Starting...' : 'Start Challenge'}
         </button>
       </div>
     </Motion.div>
@@ -355,28 +361,7 @@ export default function EcoChallenge() {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [challenges, setChallenges] = useState([])
   const [userChallenges, setUserChallenges] = useState([])
-
-  // Load stats from localStorage
-  const [stats, setStats] = useState(() => {
-    const stored = localStorage.getItem('ecoStats')
-    return stored
-      ? JSON.parse(stored)
-      : {
-          streak: 0,
-          completed: 0,
-          ecoPoints: 0,
-        }
-  })
-
-  // Persist active challenges whenever they change
-  useEffect(() => {
-    localStorage.setItem('activeChallenges', JSON.stringify(activeChallenges))
-  }, [activeChallenges])
-
-  // Persist stats whenever they change
-  useEffect(() => {
-    localStorage.setItem('ecoStats', JSON.stringify(stats))
-  }, [stats])
+  const [, setStartingChallengeId] = useState(null)
 
   // Fetch challenges from the backend
   useEffect(() => {
@@ -462,12 +447,27 @@ export default function EcoChallenge() {
     })
   }
 
-  const handleStartChallenge = (challenge) => {
-    // Add challenge to active challenges with currentDay = 0
-    setActiveChallenges((prev) => [...prev, { ...challenge, currentDay: 0 }])
+  const handleStartChallenge = async (challenge) => {
+    try {
+      setStartingChallengeId(challenge)
 
-    setShowSuccessAlert(true)
-    setTimeout(() => setShowSuccessAlert(false), 3000)
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const startedChallenge = await startChallenge(userId, challenge)
+
+      setActiveChallenges((prev) => [
+        ...prev,
+        { ...startedChallenge.data, currentDay: 0 },
+      ])
+
+      setShowSuccessAlert(true)
+      setTimeout(() => setShowSuccessAlert(false), 3000)
+    } catch (error) {
+      console.error('Failed to start challenge', error.response?.data || error)
+    } finally {
+      setStartingChallengeId(null)
+    }
   }
 
   const filteredChallenges = challenges.filter((challenge) => {
@@ -536,9 +536,7 @@ export default function EcoChallenge() {
             <div className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-400" />
               <div>
-                <p className="text-lg font-bold text-white leading-none">
-                  {stats.streak}
-                </p>
+                <p className="text-lg font-bold text-white leading-none">0</p>
                 <p className="text-xs text-gray-400">streak</p>
               </div>
             </div>
@@ -546,9 +544,7 @@ export default function EcoChallenge() {
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-[#10b981]" />
               <div>
-                <p className="text-lg font-bold text-white leading-none">
-                  {stats.completed}
-                </p>
+                <p className="text-lg font-bold text-white leading-none">0</p>
                 <p className="text-xs text-gray-400">completed</p>
               </div>
             </div>
@@ -556,9 +552,7 @@ export default function EcoChallenge() {
             <div className="flex items-center gap-2">
               <Leaf className="w-4 h-4 text-green-400" />
               <div>
-                <p className="text-lg font-bold text-white leading-none">
-                  {stats.ecoPoints}
-                </p>
+                <p className="text-lg font-bold text-white leading-none">0</p>
                 <p className="text-xs text-gray-400">points</p>
               </div>
             </div>
@@ -570,23 +564,17 @@ export default function EcoChallenge() {
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <Flame className="w-4 h-4 text-orange-400 mx-auto mb-1" />
-              <p className="text-lg font-bold text-white leading-none">
-                {stats.streak}
-              </p>
+              <p className="text-lg font-bold text-white leading-none">0</p>
               <p className="text-xs text-gray-400">streak</p>
             </div>
             <div className="text-center">
               <Award className="w-4 h-4 text-[#10b981] mx-auto mb-1" />
-              <p className="text-lg font-bold text-white leading-none">
-                {stats.completed}
-              </p>
+              <p className="text-lg font-bold text-white leading-none">0</p>
               <p className="text-xs text-gray-400">completed</p>
             </div>
             <div className="text-center">
               <Leaf className="w-4 h-4 text-green-400 mx-auto mb-1" />
-              <p className="text-lg font-bold text-white leading-none">
-                {stats.ecoPoints}
-              </p>
+              <p className="text-lg font-bold text-white leading-none">0</p>
               <p className="text-xs text-gray-400">points</p>
             </div>
           </div>

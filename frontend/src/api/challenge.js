@@ -15,3 +15,9 @@ export const getUserChallenges = async (userId, status) => {
 
   return await api.get(`/api/v1/challenges/getUserChallenges/${userId}`, config)
 }
+
+export const startChallenge = async (userId, challengeId) => {
+  return await api.post(`/api/v1/challenges/startChallenge/${userId}`, {
+    challengeId,
+  })
+}
