@@ -21,3 +21,7 @@ export const startChallenge = async (userId, challengeId) => {
     challengeId,
   })
 }
+
+export const completeChallenge = async (challengeId) => {
+  return await api.post(`/api/v1/challenges/completeChallenge/${challengeId}`)
+}

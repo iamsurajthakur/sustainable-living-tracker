@@ -10,17 +10,6 @@ import {
   Droplet,
 } from 'lucide-react'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import {
   SuccessAlert,
   TaskAlert,
   ChallengeCompleteAlert,
@@ -31,6 +20,7 @@ import {
   getChallenges,
   getUserChallenges,
   startChallenge,
+  completeChallenge,
 } from '@/api/challenge'
 
 const categoryIcons = {
@@ -42,12 +32,14 @@ const categoryIcons = {
 
 // ActiveChallengeCard Component
 const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
-  // Handle nested challenge structure (challenge.challengeId)
+  // Handle nested challenge structure
   const challengeData = challenge.challengeId || challenge
   const totalDays = parseInt(challengeData.duration || 0)
   const progress = totalDays > 0 ? (currentDay / totalDays) * 100 : 0
   const Icon = categoryIcons[challengeData.category] || Leaf
-  const COOLDOWN = 24 * 60 * 60 * 1000 // 24 hours
+
+  // COOLDOWN: set to 24ms for testing, normally use 24*60*60*1000 for 24 hours
+  const COOLDOWN = 24 * 60 * 60 * 60
 
   const challengeKey = `lastCompletedAt_${challenge._id}`
   const [lastCompletedAt, setLastCompletedAt] = useState(() => {
@@ -55,8 +47,12 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
     return stored ? Number(stored) : null
   })
   const [now, setNow] = useState(Date.now())
-  const isBlocked = lastCompletedAt !== null && now - lastCompletedAt < COOLDOWN
 
+  const isFinished = currentDay >= totalDays
+  const isBlocked =
+    !isFinished && lastCompletedAt !== null && now - lastCompletedAt < COOLDOWN
+
+  // Update `now` every second if blocked, for cooldown
   useEffect(() => {
     if (!isBlocked) return
     const interval = setInterval(() => setNow(Date.now()), 1000)
@@ -75,6 +71,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
       }}
     >
       <div className="bg-[#1a2b23] border border-[#10b981]/30 rounded-lg p-4">
+        {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1.5">
@@ -90,6 +87,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
           </div>
         </div>
 
+        {/* Progress */}
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-medium text-gray-300">
@@ -107,6 +105,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
           </div>
         </div>
 
+        {/* Daily Task */}
         <div className="bg-[#0f1a15] rounded-lg p-3 mb-3">
           <p className="text-xs font-medium text-gray-300 mb-1.5">
             Today's Task
@@ -114,22 +113,29 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
           <p className="text-sm text-gray-200">{challengeData.dailyTask}</p>
         </div>
 
+        {/* Mark as Done Button */}
         <button
           onClick={() => {
+            if (isFinished || isBlocked) return
+
             const timestamp = Date.now()
             setLastCompletedAt(timestamp)
             localStorage.setItem(challengeKey, String(timestamp))
             onComplete()
           }}
-          disabled={isBlocked}
+          disabled={isFinished || isBlocked}
           className={`w-full ${
-            isBlocked
+            isFinished || isBlocked
               ? 'bg-gray-600 opacity-50 cursor-not-allowed'
               : 'bg-[#10b981] hover:bg-[#0ea571]'
           } text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm`}
         >
           <CheckCircle className="w-4 h-4" />
-          {isBlocked ? 'Completed Today' : 'Mark as Done'}
+          {isFinished
+            ? 'Challenge Completed'
+            : isBlocked
+              ? 'Completed Today'
+              : 'Mark as Done'}
         </button>
       </div>
     </Motion.div>
@@ -313,8 +319,9 @@ export default function EcoChallenge() {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false)
   const [showTaskSuccessAlert, setShowTaskSuccessAlert] = useState(false)
   const [errorMessage, setErrorMessage] = useState(false)
-  const [lastCompletedTaskTitle] = useState('')
-  const [showCompletedChallengeTitle] = useState()
+  const [lastCompletedTaskTitle, setLastCompletedTaskTitle] = useState('')
+  const [showCompletedChallengeTitle, setShowCompletedChallengeTitle] =
+    useState('')
   const [showChallengeCompleteAlert, setShowChallengeCompleteAlert] =
     useState(false)
   const [filters, setFilters] = useState({
@@ -341,7 +348,7 @@ export default function EcoChallenge() {
     fetchChallenges()
   }, [])
 
-  // Fetch user challenges from the backend - WITH DEPENDENCY ARRAY
+  // Fetch user challenges from the backend
   useEffect(() => {
     const fetchUserChallenges = async () => {
       try {
@@ -376,8 +383,43 @@ export default function EcoChallenge() {
   }
 
   const handleComplete = async (userChallengeId) => {
-    console.log('Challenge completed:', userChallengeId)
-    // Add your completion logic here
+    try {
+      const response = await completeChallenge(userChallengeId)
+      const { completed, userChallenge } = response.data
+
+      // Update userChallenges state
+      setUserChallenges((prev) => {
+        if (completed) {
+          // Remove completed challenge
+          return prev.filter((ch) => ch._id !== userChallengeId)
+        } else {
+          // Update currentDay for the challenge by incrementing
+          return prev.map((ch) =>
+            ch._id === userChallengeId
+              ? { ...ch, currentDay: (ch.currentDay || 0) + 1 }
+              : ch
+          )
+        }
+      })
+
+      // Show appropriate success message
+      if (completed) {
+        const challengeTitle =
+          userChallenge.challengeId?.title || userChallenge.title || 'Challenge'
+        setShowCompletedChallengeTitle(challengeTitle)
+        setShowChallengeCompleteAlert(true)
+        setTimeout(() => setShowChallengeCompleteAlert(false), 3000)
+      } else {
+        const taskTitle = userChallenge.challengeId?.dailyTask || 'Daily task'
+        setLastCompletedTaskTitle(taskTitle)
+        setShowTaskSuccessAlert(true)
+        setTimeout(() => setShowTaskSuccessAlert(false), 3000)
+      }
+    } catch (err) {
+      console.error('Failed to mark challenge complete', err)
+      setErrorMessage('Failed to complete task. Please try again.')
+      setTimeout(() => setErrorMessage(null), 3000)
+    }
   }
 
   const handleStartChallenge = async (challengeId) => {
