@@ -83,8 +83,48 @@ const getUserChallenges = asyncHandler(async (req, res) => {
   res.status(200).json(new apiResponse(200, challenges, 'User challenges fetch successfully.'))
 })
 
+const completeChallenge = asyncHandler(async (req, res) => {
+  const { challengeId } = req.params
+
+  const userChallenge = await userChallenges
+    .findById(challengeId)
+    .populate('challengeId') // get the original challenge details
+
+  if (!userChallenge) {
+    throw new ApiError(404, 'User challenge not found')
+  }
+
+  if (userChallenge.status !== 'active') {
+    throw new ApiError(400, 'Challenge already completed')
+  }
+
+  // Increment day
+  userChallenge.currentDay = (userChallenge.currentDay || 0) + 1
+
+  let completed = false
+  let points = 0
+
+  if (userChallenge.currentDay >= userChallenge.challengeId.duration) {
+    userChallenge.status = 'completed'
+    completed = true
+    points = userChallenge.challengeId.impact || 0
+  }
+
+  await userChallenge.save()
+
+  res.status(200).json({
+    success: true,
+    completed,
+    points,
+    userChallenge,
+    message: completed ? 'Challenge fully completed!' : 'Day marked as done!',
+  })
+})
+
+
 export {
   getChallenges,
   startChallenges,
   getUserChallenges,
+  completeChallenge,
 }
