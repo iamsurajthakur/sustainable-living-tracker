@@ -108,9 +108,12 @@ const completeChallenge = asyncHandler(async (req, res) => {
     userChallenge.status = 'completed'
     completed = true
     points = userChallenge.challengeId.impact || 0
+
+    await userChallenges.findByIdAndDelete(userChallenge._id)
+  }else{
+    await userChallenge.save()
   }
 
-  await userChallenge.save()
 
   res.status(200).json({
     success: true,
