@@ -4,6 +4,7 @@ import ApiError from '../utils/apiError.js'
 import apiResponse from '../utils/apiResponse.js'
 import { Log } from '../models/log.model.js'
 import { getTimelineByUser } from '../services/stats.service.js'
+import { User } from '../models/user.model.js'
 
 const getEnergyStats = asyncHandler(async (req, res) => {
   const { userId } = req.query
@@ -152,4 +153,15 @@ const getRecentActivities = asyncHandler(async (req, res) => {
 
 })
 
-export { getEnergyStats, getUserTimeline, getTotalActivities, getRecentActivities }
+const getUserInfo = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  const user = await User.findById(userId).select('ecoPoints challengeCompleted')
+
+  if(!user){
+    throw new ApiError(400, 'User not found.')
+  }
+  return res.status(200).json(new apiResponse(200, user, 'User info fetched successfully.'))
+})
+
+export { getEnergyStats, getUserTimeline, getTotalActivities, getRecentActivities, getUserInfo }

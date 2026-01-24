@@ -3,6 +3,7 @@ import apiResponse from '../utils/apiResponse.js'
 import ApiError from '../utils/apiError.js'
 import { Challenge } from '../models/challenges.model.js'
 import { userChallenges } from '../models/userChallenges.model.js'
+import { User } from '../models/user.model.js'
 
 const getChallenges = asyncHandler(async (_, res) => {
   const challenges = await Challenge.find({ isActive: true })
@@ -107,7 +108,6 @@ const completeChallenge = asyncHandler(async (req, res) => {
   }
 
   userChallenge.currentDay = (userChallenge.currentDay || 0) + 1
-
   const today = new Date()
 
   // Push daily log
@@ -122,6 +122,19 @@ const completeChallenge = asyncHandler(async (req, res) => {
   const isCompleted = userChallenge.currentDay >= userChallenge.challengeId.duration
 
   if (isCompleted) {
+
+    const ecoPointsSavedByThisChallenge = userChallenge.challengeId.co2Saved || 0
+
+    await User.findByIdAndUpdate(
+      userChallenge.userId,
+      {
+        $inc: {
+          challengeCompleted: 1,
+          ecoPoints: ecoPointsSavedByThisChallenge
+        }
+      }
+    )
+
     const deletedId = userChallenge._id
     await userChallenge.save()
     await userChallenges.findByIdAndDelete(deletedId)

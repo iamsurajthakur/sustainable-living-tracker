@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    challengeCompleted: {
+      type: Number,
+      default: 0,
+    },
+    ecoPoints: {
+      type: Number,
+      default: 0,
+    }
   },
   { timestamps: true }
 )

@@ -4,6 +4,7 @@ import {
   getEnergyStats,
   getRecentActivities,
   getTotalActivities,
+  getUserInfo,
   getUserTimeline,
 } from '../controllers/stats.controller.js'
 
@@ -14,5 +15,6 @@ router.get('/getEnergyStats', verifyJWT, getEnergyStats)
 router.get('/getUserTimeline/:userId', verifyJWT, getUserTimeline)
 router.get('/getTotalActivities/:userId', verifyJWT, getTotalActivities)
 router.get('/getRecentActivities/:userId', verifyJWT, getRecentActivities)
+router.get('/getUserInfo/:userId', verifyJWT, getUserInfo)
 
 export default router
