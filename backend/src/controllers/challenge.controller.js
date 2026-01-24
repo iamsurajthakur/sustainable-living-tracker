@@ -88,41 +88,63 @@ const completeChallenge = asyncHandler(async (req, res) => {
 
   const userChallenge = await userChallenges
     .findById(challengeId)
-    .populate('challengeId') // get the original challenge details
+    .populate('challengeId')
 
-  if (!userChallenge) {
-    throw new ApiError(404, 'User challenge not found')
+  if (!userChallenge) throw new ApiError(404, 'User challenge not found')
+  if (userChallenge.status !== 'active') throw new ApiError(400, 'Challenge already completed')
+
+  const COOLDOWN = 24 // 24 hours
+
+
+  const lastLog = userChallenge.dailyLogs[userChallenge.dailyLogs.length - 1]
+  const lastCompletedAt = lastLog ? new Date(lastLog.completedAt).getTime() : 0
+
+  if (Date.now() - lastCompletedAt < COOLDOWN) {
+    return res.status(400).json({
+      success: false,
+      message: 'Challenge already completed recently',
+    })
   }
 
-  if (userChallenge.status !== 'active') {
-    throw new ApiError(400, 'Challenge already completed')
-  }
-
-  // Increment day
   userChallenge.currentDay = (userChallenge.currentDay || 0) + 1
 
-  let completed = false
-  let points = 0
+  const today = new Date()
 
-  if (userChallenge.currentDay >= userChallenge.challengeId.duration) {
-    userChallenge.status = 'completed'
-    completed = true
-    points = userChallenge.challengeId.impact || 0
+  // Push daily log
+  userChallenge.dailyLogs.push({
+    date: today,
+    completed: true,
+    co2Saved: userChallenge.challengeId.co2SavedPerDay || 0,
+    completedAt: new Date(),
+  })
 
-    await userChallenges.findByIdAndDelete(userChallenge._id)
-  }else{
+  // Check if challenge finished
+  const isCompleted = userChallenge.currentDay >= userChallenge.challengeId.duration
+
+  if (isCompleted) {
+    const deletedId = userChallenge._id
     await userChallenge.save()
+    await userChallenges.findByIdAndDelete(deletedId)
+
+    return res.status(200).json({
+      success: true,
+      completed: true,
+      deletedChallengeId: deletedId,
+      message: 'Challenge fully completed!',
+    })
   }
 
+  await userChallenge.save()
 
   res.status(200).json({
     success: true,
-    completed,
-    points,
-    userChallenge,
-    message: completed ? 'Challenge fully completed!' : 'Day marked as done!',
+    completed: false,
+    currentDay: userChallenge.currentDay,
+    message: 'Day marked as done!',
   })
 })
+
+
 
 
 export {

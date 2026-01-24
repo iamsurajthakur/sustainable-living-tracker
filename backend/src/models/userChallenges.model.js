@@ -24,6 +24,10 @@ const userChallengesSchema = new mongoose.Schema({
     enum: ['active', 'completed'],
     default: 'active',
   },
+  currentDay: {
+    type: Number,
+    default: 0,
+  },
   totalco2Saved: {
     type: Number,
     default: 0,
@@ -33,6 +37,7 @@ const userChallengesSchema = new mongoose.Schema({
       date: { type: Date, required: true },
       co2Saved: { type: Number, required: true, default: 0 },
       completed: { type: Boolean, default: true },
+      completedAt: { type: Date }
     },
   ],
 }, { timestamps: true })
