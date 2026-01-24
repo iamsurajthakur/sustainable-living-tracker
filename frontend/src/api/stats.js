@@ -19,3 +19,8 @@ export const getRecentActivities = async (userId) => {
   const res = await api.get(`/api/v1/stats/getRecentActivities/${userId}`)
   return res.data
 }
+
+export const getUserInfo = async (userId) => {
+  const res = await api.get(`/api/v1/stats/getUserInfo/${userId}`)
+  return res.data
+}

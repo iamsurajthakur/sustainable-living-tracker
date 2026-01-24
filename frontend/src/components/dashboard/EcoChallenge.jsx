@@ -22,6 +22,7 @@ import {
   startChallenge,
   completeChallenge,
 } from '@/api/challenge'
+import { getUserInfo } from '@/api/stats'
 
 const categoryIcons = {
   Energy: Zap,
@@ -38,8 +39,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
   const progress = totalDays > 0 ? (currentDay / totalDays) * 100 : 0
   const Icon = categoryIcons[challengeData.category] || Leaf
 
-  // COOLDOWN: set to 24ms for testing, normally use 24*60*60*1000 for 24 hours
-  const COOLDOWN = 24 * 60 * 60 * 60
+  const COOLDOWN = 24 * 60 * 60 * 1000
 
   const challengeKey = `lastCompletedAt_${challenge._id}`
   const [lastCompletedAt, setLastCompletedAt] = useState(() => {
@@ -128,7 +128,7 @@ const ActiveChallengeCard = ({ challenge, currentDay, onComplete, index }) => {
             isFinished || isBlocked
               ? 'bg-gray-600 opacity-50 cursor-not-allowed'
               : 'bg-[#10b981] hover:bg-[#0ea571]'
-          } text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm`}
+          } text-white font-semibold py-2.5 px-4 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-2 text-sm`}
         >
           <CheckCircle className="w-4 h-4" />
           {isFinished
@@ -303,7 +303,7 @@ const ChallengeCard = ({ challenge, onStart, index, isStarting }) => {
         <button
           onClick={() => onStart(challenge._id)}
           disabled={isStarting}
-          className={`w-full py-2 rounded text-white text-sm font-medium transition-colors
+          className={`w-full py-2 cursor-pointer rounded text-white text-sm font-medium transition-colors
             ${isStarting ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#10b981] hover:bg-[#0ea571]'}`}
         >
           {isStarting ? 'Starting...' : 'Start Challenge'}
@@ -332,13 +332,15 @@ export default function EcoChallenge() {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [challenges, setChallenges] = useState([])
   const [startingChallengeId, setStartingChallengeId] = useState(null)
+  const [ecoPoints, setEcoPoints] = useState(0)
+  const [challengeCompleted, setChallengeCompleted] = useState(0)
+  const [streak, setStreak] = useState(0)
 
   // Fetch challenges from the backend
   useEffect(() => {
     const fetchChallenges = async () => {
       try {
         const res = await getChallenges()
-        console.log('Fetched challenges:', res.data.data)
         setChallenges(res.data.data)
       } catch (error) {
         console.error('Failed to fetch challenges:', error)
@@ -357,13 +359,27 @@ export default function EcoChallenge() {
 
         const userId = userData.user._id
         const res = await getUserChallenges(userId, 'active')
-        console.log('Fetched user challenges:', res.data.data)
         setUserChallenges(res.data.data)
       } catch (error) {
         console.error('Failed to fetch user challenges:', error)
       }
     }
     fetchUserChallenges()
+  }, [])
+
+  // Fetch user info from the backend
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const res = await getUserInfo(userId)
+
+      setEcoPoints(res.data.ecoPoints)
+      setChallengeCompleted(res.data.challengeCompleted)
+      setStreak(res.data.streak)
+    }
+    fetchUserInfo()
   }, [])
 
   const handleFilterChange = (type, value) => {
@@ -385,33 +401,24 @@ export default function EcoChallenge() {
   const handleComplete = async (userChallengeId) => {
     try {
       const response = await completeChallenge(userChallengeId)
-      const { completed, userChallenge } = response.data
+      const { completed, currentDay, deletedChallengeId } = response.data
 
-      // Update userChallenges state
       setUserChallenges((prev) => {
         if (completed) {
-          // Remove completed challenge
-          return prev.filter((ch) => ch._id !== userChallengeId)
-        } else {
-          // Update currentDay for the challenge by incrementing
-          return prev.map((ch) =>
-            ch._id === userChallengeId
-              ? { ...ch, currentDay: (ch.currentDay || 0) + 1 }
-              : ch
-          )
+          return prev.filter((ch) => ch._id !== deletedChallengeId)
         }
+
+        return prev.map((ch) =>
+          ch._id === userChallengeId ? { ...ch, currentDay } : ch
+        )
       })
 
-      // Show appropriate success message
       if (completed) {
-        const challengeTitle =
-          userChallenge.challengeId?.title || userChallenge.title || 'Challenge'
-        setShowCompletedChallengeTitle(challengeTitle)
+        setShowCompletedChallengeTitle('Challenge Completed')
         setShowChallengeCompleteAlert(true)
         setTimeout(() => setShowChallengeCompleteAlert(false), 3000)
       } else {
-        const taskTitle = userChallenge.challengeId?.dailyTask || 'Daily task'
-        setLastCompletedTaskTitle(taskTitle)
+        setLastCompletedTaskTitle('Daily task completed')
         setShowTaskSuccessAlert(true)
         setTimeout(() => setShowTaskSuccessAlert(false), 3000)
       }
@@ -517,13 +524,14 @@ export default function EcoChallenge() {
               Take daily actions for a sustainable future
             </p>
           </div>
-
           {/* Compact Stats */}
           <div className="hidden md:flex items-center gap-4 bg-[#1a2b23] border border-gray-700/50 rounded-lg px-4 py-2">
             <div className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-400" />
               <div>
-                <p className="text-lg font-bold text-white leading-none">0</p>
+                <p className="text-lg font-bold text-white leading-none">
+                  {streak}
+                </p>
                 <p className="text-xs text-gray-400">streak</p>
               </div>
             </div>
@@ -531,7 +539,9 @@ export default function EcoChallenge() {
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-[#10b981]" />
               <div>
-                <p className="text-lg font-bold text-white leading-none">0</p>
+                <p className="text-lg font-bold text-white leading-none">
+                  {challengeCompleted}
+                </p>
                 <p className="text-xs text-gray-400">completed</p>
               </div>
             </div>
@@ -539,7 +549,9 @@ export default function EcoChallenge() {
             <div className="flex items-center gap-2">
               <Leaf className="w-4 h-4 text-green-400" />
               <div>
-                <p className="text-lg font-bold text-white leading-none">0</p>
+                <p className="text-lg font-bold text-white leading-none">
+                  {ecoPoints}
+                </p>
                 <p className="text-xs text-gray-400">points</p>
               </div>
             </div>
