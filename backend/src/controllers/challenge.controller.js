@@ -94,8 +94,7 @@ const completeChallenge = asyncHandler(async (req, res) => {
   if (!userChallenge) throw new ApiError(404, 'User challenge not found')
   if (userChallenge.status !== 'active') throw new ApiError(400, 'Challenge already completed')
 
-  const COOLDOWN = 24 // 24 hours
-
+  const COOLDOWN = 24 * 60 * 60 * 1000
 
   const lastLog = userChallenge.dailyLogs[userChallenge.dailyLogs.length - 1]
   const lastCompletedAt = lastLog ? new Date(lastLog.completedAt).getTime() : 0
@@ -109,29 +108,70 @@ const completeChallenge = asyncHandler(async (req, res) => {
 
   userChallenge.currentDay = (userChallenge.currentDay || 0) + 1
   const today = new Date()
+  const todayStr = today.toISOString().slice(0, 10) // YYYY-MM-DD for streak comparison
 
-  // Push daily log
+  // ======================
+  // STREAK LOGIC
+  // ======================
+  const user = await User.findById(userChallenge.userId)
+  if (!user) throw new ApiError(404, 'User not found')
+
+  // Get last completed date for streak
+  const lastStreakDateStr = user.lastStreakDate
+    ? new Date(user.lastStreakDate).toISOString().slice(0, 10)
+    : null
+
+  if (lastStreakDateStr) {
+    const yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().slice(0, 10)
+
+    if (lastStreakDateStr === yesterdayStr) {
+      // consecutive day → increment streak
+      user.streak = (user.streak || 0) + 1
+    } else if (lastStreakDateStr === todayStr) {
+      // already completed today → streak stays the same
+      user.streak = user.streak || 0
+    } else {
+      // missed a day → reset streak
+      user.streak = 1
+    }
+  } else {
+    // first-ever completion → start streak
+    user.streak = 1
+  }
+
+  // Update last streak date
+  user.lastStreakDate = today
+
+  // ======================
+  // PUSH DAILY LOG
+  // ======================
   userChallenge.dailyLogs.push({
     date: today,
     completed: true,
     co2Saved: userChallenge.challengeId.co2SavedPerDay || 0,
-    completedAt: new Date(),
+    completedAt: today,
   })
 
-  // Check if challenge finished
+  // ======================
+  // CHECK FOR COMPLETION
+  // ======================
   const isCompleted = userChallenge.currentDay >= userChallenge.challengeId.duration
 
   if (isCompleted) {
-
     const ecoPointsSavedByThisChallenge = userChallenge.challengeId.co2Saved || 0
 
+    // Update user stats
     await User.findByIdAndUpdate(
       userChallenge.userId,
       {
         $inc: {
           challengeCompleted: 1,
-          ecoPoints: ecoPointsSavedByThisChallenge
-        }
+          ecoPoints: ecoPointsSavedByThisChallenge,
+        },
+        streak: user.streak,
+        lastStreakDate: user.lastStreakDate
       }
     )
 
@@ -142,23 +182,24 @@ const completeChallenge = asyncHandler(async (req, res) => {
     return res.status(200).json({
       success: true,
       completed: true,
+      streak: user.streak,
       deletedChallengeId: deletedId,
       message: 'Challenge fully completed!',
     })
   }
 
+  // Save both user challenge and user
   await userChallenge.save()
+  await user.save()
 
   res.status(200).json({
     success: true,
     completed: false,
     currentDay: userChallenge.currentDay,
+    streak: user.streak,
     message: 'Day marked as done!',
   })
 })
-
-
-
 
 export {
   getChallenges,

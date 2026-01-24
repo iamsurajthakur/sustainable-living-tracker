@@ -156,7 +156,7 @@ const getRecentActivities = asyncHandler(async (req, res) => {
 const getUserInfo = asyncHandler(async (req, res) => {
   const { userId } = req.params
 
-  const user = await User.findById(userId).select('ecoPoints challengeCompleted')
+  const user = await User.findById(userId).select('ecoPoints challengeCompleted streak')
 
   if(!user){
     throw new ApiError(400, 'User not found.')

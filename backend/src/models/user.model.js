@@ -35,6 +35,14 @@ const userSchema = new mongoose.Schema(
     ecoPoints: {
       type: Number,
       default: 0,
+    },
+    streak: {
+      type: Number,
+      default: 0,
+    },
+    lastStreakDate: {
+      type: Date,
+      default: 0,
     }
   },
   { timestamps: true }
