@@ -13,7 +13,7 @@ import {
 import TinySparkline from '@/components/charts/TinySparkline'
 import EnergyChart from '@/components/dashboard/ChartCard'
 import { getUserCo2 } from '@/api/action'
-import { getEnergyStats } from '@/api/stats'
+import { getEnergyStats, getUserInfo } from '@/api/stats'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 25 },
@@ -67,6 +67,12 @@ const insights = [
 const Overview = () => {
   const [co2Saved, setCo2Saved] = useState(0)
   const [stats, setStats] = useState([])
+  const [ecoPoints, setEcoPoints] = useState(0)
+  const [challengeCompleted, setChallengeCompleted] = useState(0)
+  const [streak, setStreak] = useState(0)
+
+  const STREAK_GOAL = 30
+  const streakProgress = Math.min((streak / STREAK_GOAL) * 100, 100)
 
   //fetch user co2 from backend
   useEffect(() => {
@@ -91,6 +97,21 @@ const Overview = () => {
     }
     fetchEnergyStats()
   }, [])
+
+  //fetch the eco challenge stats from backend
+  useEffect(() => {
+    const fetchEcoStats = async () => {
+      const userData = JSON.parse(localStorage.getItem('user'))
+      const userId = userData.user._id
+
+      const res = await getUserInfo(userId)
+
+      setEcoPoints(res.data.ecoPoints)
+      setChallengeCompleted(res.data.challengeCompleted)
+      setStreak(res.data.streak)
+    }
+    fetchEcoStats()
+  })
 
   const categories = ['energy', 'water', 'transport']
   const mappedStats = categories.map((cat) => {
@@ -251,51 +272,110 @@ const Overview = () => {
             initial="hidden"
             animate="show"
             transition={{ duration: 0.9, ease: 'easeIn' }}
-            className="relative bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] backdrop-blur-sm rounded-3xl p-8 border border-green-500/20 shadow-2xl overflow-hidden"
+            className="
+    relative
+    h-full
+    bg-gradient-to-br from-[#1f3b2f] via-[#152822] to-[#0f1f1a]
+    rounded-3xl
+    p-6
+    border border-green-500/10
+    shadow-2xl
+  "
           >
-            <h3 className="text-green-400/70 text-sm font-medium uppercase tracking-wider mb-6 mt-3">
-              sustainable action completed
-            </h3>
+            {/* Header */}
+            <div className="mb-4">
+              <p className="text-[11px] text-green-400 tracking-widest uppercase flex items-center gap-2">
+                ✦ Progress
+              </p>
+            </div>
 
+            {/* Stats */}
             <div className="space-y-4">
+              {/* Challenges Completed */}
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center">
                   <Award className="w-4 h-4 text-green-400" />
                 </div>
-
                 <div>
-                  <span className="text-slate-200 font-light text-sm">
-                    Eco-challenges completed
-                  </span>
-                  <p className="text-xs text-slate-400">
-                    12 this month • <span className="text-green-400">+15%</span>
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wide">
+                    Challenges completed
+                  </p>
+                  <p className="text-base font-semibold text-slate-100">
+                    {challengeCompleted}
                   </p>
                 </div>
               </div>
 
-              {/* Progress Bar */}
-              <div className="mt-2">
-                <div className="w-full h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-400/80"
-                    style={{ width: '65%' }}
-                  ></div>
+              {/* Eco Points */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <Leaf className="w-4 h-4 text-green-400" />
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  65% of monthly goal
-                </p>
+                <div>
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wide">
+                    Eco points earned
+                  </p>
+                  <p className="text-base font-semibold text-slate-100">
+                    {ecoPoints.toLocaleString()} pts
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Streak Sub Card */}
+            <div
+              className="
+      mt-4
+      rounded-xl
+      p-3
+      bg-black/20
+      border border-green-500/10
+    "
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-slate-400">Current streak</p>
+                    <p className="text-sm font-medium text-slate-100">
+                      {streak} days
+                    </p>
+                  </div>
+                </div>
+
+                <span
+                  className="
+        text-[11px] px-2 py-[2px]
+        rounded-full
+        bg-green-500/10
+        text-green-400
+        border border-green-500/20
+      "
+                >
+                  ● Active
+                </span>
               </div>
 
-              {/* Streak */}
-              <p className="text-xs text-slate-400 flex gap-2 items-center">
-                <TrendingUp className="w-3 h-3 text-green-400" />
-                4-day streak — keep it going!
-              </p>
+              {/* Progress Bar */}
+              <div className="w-full h-[6px] bg-slate-700/40 rounded-full overflow-hidden">
+                <Motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${streakProgress}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
+                />
+              </div>
 
-              {/* Suggested Next Action */}
-              <button className="text-xs text-slate-400 hover:text-slate-200 transition mt-3">
-                Suggested challenge: “No-plastic day” →
-              </button>
+              <div className="flex justify-between mt-1 text-[10px] text-slate-400">
+                <span>
+                  {streak} of {STREAK_GOAL} days
+                </span>
+                <span className="text-green-400">
+                  {Math.round(streakProgress)}%
+                </span>
+              </div>
             </div>
           </Motion.div>
         </div>

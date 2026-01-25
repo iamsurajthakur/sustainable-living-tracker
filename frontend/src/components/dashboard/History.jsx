@@ -294,7 +294,7 @@ const History = () => {
                           <div className="flex-shrink-0 text-right">
                             <div className="flex items-baseline gap-0.5 sm:gap-1 justify-end mb-0.5 sm:mb-1">
                               <span className="text-lg sm:text-xl md:text-2xl font-bold text-emerald-400">
-                                {activity.co2}
+                                {Math.floor(activity.co2 * 10000) / 10000}
                               </span>
                               <span className="text-xs sm:text-sm font-semibold text-emerald-400/70">
                                 kg
