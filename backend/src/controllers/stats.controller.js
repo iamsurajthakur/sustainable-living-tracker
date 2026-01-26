@@ -164,4 +164,45 @@ const getUserInfo = asyncHandler(async (req, res) => {
   return res.status(200).json(new apiResponse(200, user, 'User info fetched successfully.'))
 })
 
-export { getEnergyStats, getUserTimeline, getTotalActivities, getRecentActivities, getUserInfo }
+const getChartData = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  if(!userId){
+    throw new ApiError(400, 'userId is missing')
+  }
+
+  const data = await Log.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId)
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: '%Y-%m-%d',
+            date: '$activityDate',
+          },
+        },
+        totalCo2: { $sum: '$co2' },
+      },
+    },
+    {
+      $sort: { _id: 1 },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: '$_id',
+        value: {
+          $round: ['$totalCo2', 4],
+        },
+      },
+    },
+  ])
+
+  return res.status(200).json(new apiResponse(200, data, 'Chart data fetched successfully'))
+})
+
+export { getEnergyStats, getUserTimeline, getTotalActivities, getRecentActivities, getUserInfo, getChartData }
