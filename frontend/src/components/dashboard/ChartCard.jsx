@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   LineChart,
   Line,
@@ -8,204 +8,263 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  AreaChart,
 } from 'recharts'
 import { motion as Motion } from 'framer-motion'
+import { TrendingDown, Zap, Calendar } from 'lucide-react'
+import { getChartData } from '@/api/stats'
 
 const EnergyChart = () => {
-  const [timePeriod, setTimePeriod] = useState('1month')
-
-  // Sample data for different time periods
-  const allData = {
-    '1month': [
-      { week: 'Week 1', value: 420 },
-      { week: 'Week 2', value: 380 },
-      { week: 'Week 3', value: 350 },
-      { week: 'Week 4', value: 320 },
-    ],
-    '3months': [
-      { week: 'Jan', value: 450 },
-      { week: 'Feb', value: 400 },
-      { week: 'Mar', value: 350 },
-      { week: 'Apr', value: 320 },
-      { week: 'May', value: 300 },
-      { week: 'Jun', value: 280 },
-    ],
-    '6months': [
-      { week: 'Jan', value: 480 },
-      { week: 'Feb', value: 450 },
-      { week: 'Mar', value: 420 },
-      { week: 'Apr', value: 390 },
-      { week: 'May', value: 360 },
-      { week: 'Jun', value: 330 },
-      { week: 'Jul', value: 310 },
-      { week: 'Aug', value: 290 },
-    ],
-    '1year': [
-      { week: 'Jan', value: 500 },
-      { week: 'Feb', value: 480 },
-      { week: 'Mar', value: 460 },
-      { week: 'Apr', value: 440 },
-      { week: 'May', value: 420 },
-      { week: 'Jun', value: 400 },
-      { week: 'Jul', value: 380 },
-      { week: 'Aug', value: 360 },
-      { week: 'Sep', value: 340 },
-      { week: 'Oct', value: 320 },
-      { week: 'Nov', value: 300 },
-      { week: 'Dec', value: 280 },
-    ],
-  }
-
-  const energyReduction = allData[timePeriod]
+  const [energyReduction, setEnergyReduction] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
   }
 
-  const periods = [
-    { id: '1month', label: '1M' },
-    { id: '3months', label: '3M' },
-    { id: '6months', label: '6M' },
-    { id: '1year', label: '1Y' },
-  ]
+  const fillMissingDays = (data) => {
+    if (data.length === 0) return []
+
+    const start = new Date(data[0].week)
+    const end = new Date(data[data.length - 1].week)
+
+    const map = {}
+    data.forEach((d) => (map[d.week] = d.value))
+
+    const filled = []
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const key = d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })
+      filled.push({ week: key, value: map[key] || 0 })
+    }
+
+    return filled
+  }
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        setLoading(true)
+        const userData = JSON.parse(localStorage.getItem('user'))
+        const userId = userData.user._id
+
+        const res = await getChartData(userId)
+        const chartData = fillMissingDays(
+          res.data.map((item) => ({
+            week: new Date(item.date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+            }),
+            value: item.value,
+          }))
+        )
+        setEnergyReduction(chartData)
+      } catch (error) {
+        console.error('Error fetching chart data:', error)
+        setEnergyReduction([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchChartData()
+  }, [])
+
+  const totalSaved = energyReduction.reduce((acc, item) => acc + item.value, 0)
+  const averageSaved =
+    energyReduction.length > 0
+      ? Math.round(totalSaved / energyReduction.length)
+      : 0
+  const peakSaving =
+    energyReduction.length > 0
+      ? Math.max(...energyReduction.map((item) => item.value))
+      : 0
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-emerald-950/95 backdrop-blur-sm border border-green-500/30 rounded-xl p-3 shadow-2xl">
+          <p className="text-emerald-200 text-xs font-medium mb-1.5">{label}</p>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+            <p className="text-green-400 text-sm font-bold">
+              {payload[0].value.toFixed(2)} kWh
+            </p>
+          </div>
+        </div>
+      )
+    }
+    return null
+  }
 
   return (
     <Motion.div
       variants={cardVariants}
       initial="hidden"
       animate="show"
-      transition={{ duration: 0.2, ease: 'easeIn' }}
-      className="lg:col-span-2 bg-gradient-to-br from-green-500/5 via-[#1a1f1d] to-[#1a1f1d] bg-[#292d2b] backdrop-blur-sm rounded-3xl p-6 border border-slate-800/50 shadow-xl"
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="lg:col-span-2 bg-[#1a2520] backdrop-blur-sm rounded-2xl p-6 border border-emerald-900/30 shadow-2xl transition-shadow duration-300"
     >
-      {/* Header with title and period selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h3 className="text-green-400/80 text-xs md:text-sm font-semibold uppercase tracking-wider">
-            Energy Reduction
-          </h3>
-          <p className="text-slate-400 text-xs mt-1">
-            Track your energy savings over time
-          </p>
-        </div>
-
-        {/* Time period selector */}
-        <div className="flex gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-800/50">
-          {periods.map((period) => (
-            <button
-              key={period.id}
-              onClick={() => setTimePeriod(period.id)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                timePeriod === period.id
-                  ? 'bg-green-500/20 text-green-400 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800/50'
-              }`}
-            >
-              {period.label}
-            </button>
-          ))}
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-green-500/15 border border-green-500/30 flex items-center justify-center">
+            <Zap className="w-5 h-5 text-green-400" />
+          </div>
+          <div>
+            <h3 className="text-white text-lg font-semibold">
+              Energy Reduction Over Time
+            </h3>
+            <p className="text-emerald-200/60 text-sm mt-0.5">
+              Track your daily CO₂ savings and environmental impact
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Chart container */}
-      <div className="relative h-64 md:h-72 lg:h-80 w-full">
-        <ResponsiveContainer width="100%" height={288}>
-          <LineChart
-            data={energyReduction}
-            margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-          >
-            <CartesianGrid
-              stroke="#043919"
-              strokeOpacity={0.2}
-              vertical={false}
-            />
-
-            {/* X Axis */}
-            <XAxis
-              dataKey="week"
-              tick={{ fill: '#94a3b8', fontSize: 11 }}
-              tickLine={false}
-            />
-
-            {/* Y Axis */}
-            <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} />
-
-            {/* Tooltip */}
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#0f172a',
-                border: '1px solid #1e293b',
-                borderRadius: '8px',
-                color: '#fff',
-                fontSize: '12px',
-              }}
-              labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
-            />
-
-            {/* Gradient area under curve */}
-            <defs>
-              <linearGradient id="colorEnergy" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="#22c55e"
-              fill="url(#colorEnergy)"
-              fillOpacity={0.2}
-            />
-
-            {/* Main line */}
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#22c55e"
-              strokeWidth={3}
-              dot={{
-                r: 4,
-                stroke: '#0f172a',
-                strokeWidth: 2,
-                fill: '#22c55e',
-              }}
-              activeDot={{
-                r: 6,
-                stroke: '#22c55e',
-                strokeWidth: 2,
-                fill: '#0f172a',
-              }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Stats footer */}
-      <div className="mt-6 pt-4 border-t border-slate-800/50 flex flex-wrap gap-4 md:gap-6">
-        <div>
-          <p className="text-slate-500 text-xs">Total Saved</p>
-          <p className="text-green-400 text-lg md:text-xl font-semibold mt-0.5">
-            {energyReduction.reduce((acc, item) => acc + item.value, 0)} kWh
-          </p>
+      {loading ? (
+        <div className="h-72 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-green-500/20 border-t-green-500 rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-emerald-200/60 text-sm">Loading your data...</p>
+          </div>
         </div>
-        <div>
-          <p className="text-slate-500 text-xs">Average</p>
-          <p className="text-slate-300 text-lg md:text-xl font-semibold mt-0.5">
-            {Math.round(
-              energyReduction.reduce((acc, item) => acc + item.value, 0) /
-                energyReduction.length
-            )}{' '}
-            kWh
-          </p>
+      ) : energyReduction.length === 0 ? (
+        <div className="h-72 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="w-16 h-16 rounded-full bg-emerald-950/50 border border-emerald-800/30 flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-emerald-600/60" />
+            </div>
+            <h4 className="text-emerald-100 text-lg font-semibold mb-2">
+              No Data Available Yet
+            </h4>
+            <p className="text-emerald-200/60 text-sm">
+              Start tracking your energy savings today. Your data will appear
+              here as you make progress.
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="text-slate-500 text-xs">Trend</p>
-          <p className="text-green-400 text-lg md:text-xl font-semibold mt-0.5 flex items-center gap-1">
-            <span className="text-sm">↓</span> 12%
-          </p>
-        </div>
-      </div>
+      ) : (
+        <>
+          <div className="relative h-72 w-full mb-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={energyReduction}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="colorEnergy" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+
+                <CartesianGrid
+                  stroke="#065f46"
+                  strokeOpacity={0.15}
+                  strokeDasharray="3 3"
+                  vertical={false}
+                />
+
+                <XAxis
+                  dataKey="week"
+                  tick={{ fill: '#86efac', fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: '#065f46', strokeWidth: 1 }}
+                  dy={10}
+                />
+
+                <YAxis
+                  tick={{ fill: '#86efac', fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: '#065f46', strokeWidth: 1 }}
+                  label={{
+                    value: 'kWh Saved',
+                    angle: -90,
+                    position: 'insideLeft',
+                    style: { fill: '#86efac', fontSize: 12 },
+                  }}
+                />
+
+                <Tooltip content={<CustomTooltip />} />
+
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#22c55e"
+                  strokeWidth={3}
+                  fill="url(#colorEnergy)"
+                  dot={{
+                    r: 4,
+                    stroke: '#22c55e',
+                    strokeWidth: 2,
+                    fill: '#0f172a',
+                  }}
+                  activeDot={{
+                    r: 6,
+                    stroke: '#22c55e',
+                    strokeWidth: 3,
+                    fill: '#0f172a',
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Stats footer */}
+          <div className="pt-5 border-t border-emerald-900/30">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-emerald-950/40 rounded-xl p-4 border border-emerald-800/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingDown className="w-4 h-4 text-green-400" />
+                  <p className="text-white-300/70 text-xs font-medium uppercase tracking-wide">
+                    Total Saved
+                  </p>
+                </div>
+                <p className="text-white-400 text-2xl font-bold">
+                  {totalSaved.toFixed(1)}
+                  <span className="text-sm font-normal text-emerald-300/60 ml-1">
+                    kWh
+                  </span>
+                </p>
+              </div>
+
+              <div className="bg-emerald-950/40 rounded-xl p-4 border border-emerald-800/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-blue-500/20 border border-blue-400/50"></div>
+                  <p className="text-white-300/70 text-xs font-medium uppercase tracking-wide">
+                    Daily Avg
+                  </p>
+                </div>
+                <p className="text-emerald-100 text-2xl font-bold">
+                  {averageSaved}
+                  <span className="text-sm font-normal text-emerald-300/60 ml-1">
+                    kWh
+                  </span>
+                </p>
+              </div>
+
+              <div className="bg-emerald-950/40 rounded-xl p-4 border border-emerald-800/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-amber-500/20 border border-amber-400/50"></div>
+                  <p className="text-white-300/70 text-xs font-medium uppercase tracking-wide">
+                    Peak Day
+                  </p>
+                </div>
+                <p className="text-emerald-100 text-2xl font-bold">
+                  {peakSaving.toFixed(1)}
+                  <span className="text-sm font-normal text-emerald-300/60 ml-1">
+                    kWh
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </Motion.div>
   )
 }

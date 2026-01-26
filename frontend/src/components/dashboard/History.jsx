@@ -3,7 +3,6 @@ import { getUserCo2 } from '@/api/action'
 import React, { useEffect, useState } from 'react'
 
 const History = () => {
-  const [activeFilter, setActiveFilter] = useState('week')
   const [userTimeline, setUserTimeline] = useState([])
   const [, setLoading] = useState(false)
   const [, setError] = useState(null)
@@ -135,40 +134,6 @@ const History = () => {
           <div className="mb-6">
             <h1 className="text-3xl font-semibold text-white mb-2">History</h1>
             <p className="text-gray-400">Review your sustainable actions</p>
-          </div>
-
-          {/* Date Filter */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setActiveFilter('today')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeFilter === 'today'
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-[#1a1a1a] text-gray-300 hover:bg-[#252525]'
-              }`}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => setActiveFilter('week')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeFilter === 'week'
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-[#1a1a1a] text-gray-300 hover:bg-[#252525]'
-              }`}
-            >
-              This Week
-            </button>
-            <button
-              onClick={() => setActiveFilter('month')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeFilter === 'month'
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-[#1a1a1a] text-gray-300 hover:bg-[#252525]'
-              }`}
-            >
-              This Month
-            </button>
           </div>
 
           {/* Period Summary */}

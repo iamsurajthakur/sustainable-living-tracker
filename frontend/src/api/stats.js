@@ -24,3 +24,8 @@ export const getUserInfo = async (userId) => {
   const res = await api.get(`/api/v1/stats/getUserInfo/${userId}`)
   return res.data
 }
+
+export const getChartData = async (userId) => {
+  const res = await api.get(`/api/v1/stats/getChartData/${userId}`)
+  return res.data
+}
